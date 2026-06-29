@@ -1,5 +1,5 @@
-name: login_portal
-description: "A new Flutter project."
+name: Eduwide
+description: "HNDIT 4232 Project - Login Portal"
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -27,9 +27,19 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^5.0.0
+  flutter_launcher_icons: ^0.13.1
 
 flutter:
   uses-material-design: true
 
+
+flutter_launcher_icons:
+  android: true
+  ios: true
+  image_path: "assets/logo/app-icon.png"
+  adaptive_icon_background: "#ffffff"
+  adaptive_icon_foreground: "assets/logo/app-icon.png"
+
   assets:
     - assets/logo/logo.png
+    - assets/logo/app-icon.png
