@@ -1,0 +1,308 @@
+<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'>
+<head>
+<title>Eduwide Login Portal Project Report</title>
+<style>
+    body {
+        font-family: 'Arial', sans-serif;
+        line-height: 1.6;
+        color: #333333;
+    }
+    h1 {
+        font-size: 24pt;
+        color: #0D47A1;
+        text-align: center;
+        margin-bottom: 5px;
+    }
+    .subtitle {
+        font-size: 14pt;
+        color: #555555;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+    h2 {
+        font-size: 18pt;
+        color: #0D47A1;
+        border-bottom: 2px solid #E3F2FD;
+        padding-bottom: 5px;
+        margin-top: 30px;
+    }
+    h3 {
+        font-size: 14pt;
+        color: #1976D2;
+        margin-top: 20px;
+    }
+    p, li {
+        font-size: 11pt;
+        text-align: justify;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 20px 0;
+    }
+    th {
+        background-color: #1976D2;
+        color: #FFFFFF;
+        font-weight: bold;
+        text-align: left;
+        padding: 10px;
+        border: 1px solid #1976D2;
+    }
+    td {
+        padding: 10px;
+        border: 1px solid #CCCCCC;
+        background-color: #F9F9F9;
+    }
+    pre {
+        background-color: #F4F4F4;
+        border-left: 4px solid #42A5F5;
+        padding: 15px;
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 10pt;
+        margin: 15px 0;
+    }
+    code {
+        font-family: 'Courier New', Courier, monospace;
+        background-color: #F4F4F4;
+        padding: 2px 5px;
+    }
+    .highlight-box {
+        background-color: #E3F2FD;
+        border-left: 5px solid #1976D2;
+        padding: 15px;
+        margin: 20px 0;
+    }
+</style>
+</head>
+<body>
+
+<div style="padding: 20px;">
+    <p style="text-align: center; font-weight: bold; color: #1976D2; letter-spacing: 2px;">HNDIT 4232 PROJECT</p>
+    <h1>Eduwide Login Portal Project Report</h1>
+    <p class="subtitle">Framework: Flutter (Dart) | Backend: Firebase (Auth &amp; Firestore) &amp; Cloudinary REST API</p>
+
+    <div class="highlight-box">
+        <p><strong>Project Overview:</strong> This report is pre-formatted for submission. You can open this file directly in Microsoft Word and save it as a standard Word Document (.docx) file.</p>
+    </div>
+
+    <h2>1. Project Overview &amp; Objectives</h2>
+    <p>This project, named <strong>Eduwide</strong> (commercially branded as <strong>EduLK</strong>), is a cross-platform mobile application developed using Flutter. The system serves as a secure, scalable authentication and profile management portal. It incorporates a role-based access control (RBAC) model to distinguish between <strong>Admin</strong> and <strong>User</strong> accounts. Additionally, it integrates with <strong>Cloudinary CDN</strong> for remote media storage, ensuring efficient handling of profile pictures without stressing the primary database.</p>
+    
+    <h3>Key Objectives:</h3>
+    <ul>
+        <li>Implement secure sign-up, sign-in, and password recovery mechanisms using Firebase.</li>
+        <li>Enable detailed profile management by linking Firestore documents to Auth accounts.</li>
+        <li>Implement UI dispatching based on server-side roles (Admin vs. User).</li>
+        <li>Incorporate direct HTTP multipart uploads to Cloudinary storage buckets.</li>
+        <li>Add email verification checks that restrict profile actions until the email link is verified.</li>
+        <li>Apply custom timezone database localization (Colombo, Sri Lanka).</li>
+    </ul>
+
+    <h2>2. Technology Stack &amp; Dependencies</h2>
+    <p>The application is built on top of the Flutter SDK and utilizes the following verified dependencies from the <code>pubspec.yaml</code> file:</p>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Package Name</th>
+                <th>Version</th>
+                <th>Functional Application Purpose</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>firebase_core</strong></td>
+                <td>^2.32.0</td>
+                <td>Initializes Firebase services for Android, iOS, and Web environments.</td>
+            </tr>
+            <tr>
+                <td><strong>firebase_auth</strong></td>
+                <td>^4.20.0</td>
+                <td>Manages user creation, session persistence, secure login, password resets, and email validation.</td>
+            </tr>
+            <tr>
+                <td><strong>cloud_firestore</strong></td>
+                <td>^4.17.5</td>
+                <td>Stores structured metadata profiles (NIC, Mobile, Role) linked via the Firebase UID.</td>
+            </tr>
+            <tr>
+                <td><strong>timezone</strong></td>
+                <td>^0.9.2</td>
+                <td>Configures the localized timezone environment (Asia/Colombo) for auditing and log times.</td>
+            </tr>
+            <tr>
+                <td><strong>image_picker</strong></td>
+                <td>^1.0.4</td>
+                <td>Enables picking profile photos from the device's photo library or snapping a new one via the camera.</td>
+            </tr>
+            <tr>
+                <td><strong>http</strong></td>
+                <td>^1.1.0</td>
+                <td>Handles direct REST API communication (POST) to upload images to Cloudinary.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>3. Project Directory Structure</h2>
+    <p>The code architecture follows a structured separation of concerns pattern to ensure modularity and ease of maintenance:</p>
+    
+    <pre>
+lib/
+├── auth/
+│   ├── firebase_load_check_screen.dart   # Loader during Firebase loading
+│   ├── forgot_password_screen.dart       # Password reset submission UI
+│   ├── login_screen.dart                  # User authentication screen
+│   ├── signup_screen.dart                 # Account creation screen with role choice
+│   ├── simple_preload_screen.dart         # Transition preloader before dashboard
+│   └── start_page.dart                    # Welcome lander screen (EduLK logo)
+│
+├── core/
+│   ├── app_colors.dart                   # Global theme color tokens (Blue Palette)
+│   ├── dashboard_wrapper.dart            # Handles routing check (Admin vs User)
+│   └── firebase_options.dart             # Configuration mapping for Firebase platforms
+│
+├── models/
+│   └── user_model.dart                   # Data modeling for Firebase user profiles
+│
+├── screens/
+│   ├── admin_dashboard.dart              # Specialized Admin settings panel
+│   └── user_dashboard.dart               # User profile page
+│
+├── auth_service.dart                     # Detached service layer for auth operations
+└── main.dart                             # Starts the application and configures local timezone
+    </pre>
+
+    <h2>4. Architectural Workflow &amp; Router Control</h2>
+    <p>The application employs a stream listener inside the entry file to monitor authentication state transitions. Once authenticated, the <code>DashboardWrapper</code> executes a Firestore lookup to retrieve the current user's role metadata.</p>
+    
+    <pre>
+1. main() Initializes -> Configures TimeZone (Asia/Colombo) -> Initializes Firebase.
+2. AuthWrapper listens to authStateChanges Stream.
+   ├── ConnectionState.waiting -> Shows FirebaseLoadCheckScreen
+   ├── Snapshot has no data    -> Redirects to StartPage
+   └── Snapshot has user data  -> Redirects to SimplePreloadScreen -> DashboardWrapper
+3. DashboardWrapper retrieves current Firebase UID.
+   └── Reads Firestore collection `/users/{uid}`.
+       ├── role == "admin"     -> Launches AdminDashboard
+       └── role == "user"      -> Launches UserDashboard
+    </pre>
+
+    <h2>5. Database Schema Definition (Cloud Firestore)</h2>
+    <p>The app stores non-credential user records in Firestore under the <code>users</code> collection. Each record maps directly to the user's Auth <code>uid</code>:</p>
+    
+    <table>
+        <thead>
+            <tr>
+                <th>Field Name</th>
+                <th>Data Type</th>
+                <th>Database Purpose</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>uid</code></td>
+                <td>String</td>
+                <td>Primary key corresponding to the Firebase Auth ID.</td>
+            </tr>
+            <tr>
+                <td><code>name</code></td>
+                <td>String</td>
+                <td>The full name inputted by the user during signup.</td>
+            </tr>
+            <tr>
+                <td><code>email</code></td>
+                <td>String</td>
+                <td>Primary communication email address.</td>
+            </tr>
+            <tr>
+                <td><code>nic</code></td>
+                <td>String</td>
+                <td>National Identity Card number for identity verification.</td>
+            </tr>
+            <tr>
+                <td><code>mobile</code></td>
+                <td>String</td>
+                <td>Mobile telephone contact details.</td>
+            </tr>
+            <tr>
+                <td><code>role</code></td>
+                <td>String</td>
+                <td>Defines privileges (restricted options include "admin" or "user").</td>
+            </tr>
+            <tr>
+                <td><code>profileImageUrl</code></td>
+                <td>String</td>
+                <td>The network URL retrieved from Cloudinary after uploading.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h2>6. Core Technical Code Components</h2>
+    <h3>6.1 Firestore Profile Serializer</h3>
+    <p>The model class <code>AppUser</code> converts Firestore data mapping keys into structured Dart objects and vice versa:</p>
+    <pre>
+class AppUser {
+  final String uid;
+  final String email;
+  final String name;
+  final String nic;
+  final String mobile;
+  final String role;
+
+  AppUser({
+    required this.uid,
+    required this.email,
+    required this.name,
+    required this.nic,
+    required this.mobile,
+    required this.role,
+  });
+
+  Map&lt;String, dynamic&gt; toMap() {
+    return {
+      'uid': uid,
+      'email': email,
+      'name': name,
+      'nic': nic,
+      'mobile': mobile,
+      'role': role,
+    };
+  }
+
+  factory AppUser.fromMap(String uid, Map&lt;String, dynamic&gt; map) {
+    return AppUser(
+      uid: uid,
+      email: map['email'] ?? '',
+      name: map['name'] ?? '',
+      nic: map['nic'] ?? '',
+      mobile: map['mobile'] ?? '',
+      role: map['role'] ?? 'user',
+    );
+  }
+}
+    </pre>
+
+    <h3>6.2 Direct Cloudinary HTTP Upload</h3>
+    <p>To keep the application thin, profile photos are posted to Cloudinary via a direct HTTP Multipart Post request. The Cloudinary server returns a JSON payload containing the public secure URL:</p>
+    <pre>
+Future&lt;String?&gt; _uploadToCloudinary(File file) async {
+  final uri = Uri.parse("https://api.cloudinary.com/v1_1/dqeptzlsb/image/upload");
+  final request = http.MultipartRequest("POST", uri);
+  
+  request.fields['upload_preset'] = 'flutter_mediq_upload';
+  request.files.add(await http.MultipartFile.fromPath('file', file.path));
+
+  final response = await request.send();
+  if (response.statusCode == 200) {
+    final responseData = await response.stream.toBytes();
+    final responseString = String.fromCharCodes(responseData);
+    final jsonMap = jsonDecode(responseString);
+    return jsonMap['secure_url']; // Remote URL
+  }
+  return null;
+}
+    </pre>
+</div>
+
+</body>
+</html>
