@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import '../core/app_colors.dart';   
-import 'login_screen.dart';          
-import 'signup_screen.dart';        
+import '../core/app_colors.dart';
+import 'login_screen.dart';
+import 'signup_screen.dart';
 
 class StartPage extends StatelessWidget {
   const StartPage({super.key});
@@ -13,56 +13,64 @@ class StartPage extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 30.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Hero(
-              tag: 'app-logo',
-              child: Image.asset(
-                'assets/logo/logo.png',
-                height: 200,
-                errorBuilder: (context, error, stackTrace) =>
-                    const Icon(Icons.medical_services, size: 100, color: AppColors.primaryPurple),
+            Expanded(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Hero(
+                    tag: 'app-logo',
+                    child: Image.asset(
+                      'assets/logo/logo.png',
+                      height: 200,
+                      errorBuilder: (context, error, stackTrace) =>
+                          const Icon(Icons.medical_services, size: 100, color: AppColors.primaryPurple),
+                    ),
+                  ),
+                  const SizedBox(height: 30),
+                  const Text(
+                    'Welcome to EduLK',
+                    style: TextStyle(
+                      color: AppColors.darkText,
+                      fontSize: 28,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  const Text(
+                    'Your trusted Education Partner',
+                    style: TextStyle(color: AppColors.darkText, fontSize: 16),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 50),
+                  _buildGradientButton(
+                    text: 'Login',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const LoginPage()),
+                      );
+                    },
+                  ),
+                  const SizedBox(height: 16),
+                  _buildOutlinedButton(
+                    text: 'Create Account',
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => const SignUpPage()),
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
-            const SizedBox(height: 30),
-            const Text(
-              'Welcome to Eduwide',
-              style: TextStyle(
-                color: AppColors.darkText,
-                fontSize: 28,
-                fontWeight: FontWeight.bold,
+            const Padding(
+              padding: EdgeInsets.only(bottom: 12.0),
+              child: Text(
+                'Developed By Devlk',
+                style: TextStyle(color: AppColors.darkText, fontSize: 11),
               ),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              'Your trusted Education Partner',
-              style: TextStyle(color: AppColors.darkText, fontSize: 16),
-              textAlign: TextAlign.center,
-            ),
-            const SizedBox(height: 50),
-            _buildGradientButton(
-              text: 'Login',
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const LoginPage()),
-                );
-              },
-            ),
-            const SizedBox(height: 16),
-            _buildOutlinedButton(
-              text: 'Create Account',
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(builder: (_) => const SignUpPage()),
-                );
-              },
-            ),
-            const SizedBox(height: 40),
-            const Text(
-              'Developed By Devlk',
-              style: TextStyle(color: AppColors.darkText, fontSize: 11),
             ),
           ],
         ),
