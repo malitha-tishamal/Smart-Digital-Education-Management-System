@@ -2,7 +2,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import '../core/app_colors.dart'; 
+import '../core/app_colors.dart';
 import 'signup_screen.dart';
 import '../core/dashboard_wrapper.dart';
 import 'forgot_password_screen.dart';
@@ -26,7 +26,7 @@ class _LoginPageState extends State<LoginPage> {
   String? _errorMessage;
   Timer? _lockoutTimer;
 
-
+  // --- Lockout helper methods ---
   int _getLockoutDuration(int attempts) {
     switch (attempts) {
       case 3: return 30;
@@ -57,6 +57,7 @@ class _LoginPageState extends State<LoginPage> {
     if (userDoc == null) return;
     final data = userDoc.data() as Map<String, dynamic>;
     int attempts = (data['failedLoginAttempts'] ?? 0) + 1;
+    // ✅ Default status to 'Approved' if missing
     String status = data['status'] ?? 'Approved';
     Timestamp? lockoutUntil;
 
@@ -94,7 +95,8 @@ class _LoginPageState extends State<LoginPage> {
     if (userDoc == null) return (isLocked: false, message: null, lockoutEnd: null);
 
     final data = userDoc.data() as Map<String, dynamic>;
-    final status = data['status'] as String?;
+    // ✅ Default status to 'Approved' if missing
+    final status = data['status'] as String? ?? 'Approved';
     final lockoutUntil = data['lockoutUntil'] as Timestamp?;
 
     if (status == 'Locked') {
@@ -159,6 +161,7 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  // --- Login logic ---
   Future<void> _handleLogin() async {
     setState(() {
       _errorMessage = null;
@@ -202,14 +205,16 @@ class _LoginPageState extends State<LoginPage> {
       }
 
       final data = userDoc.data() as Map<String, dynamic>;
-      final accountStatus = data['status'];
+      // ✅ FIX: default to 'Approved' if status is missing
+      final accountStatus = data['status'] ?? 'Approved';
+
       if (accountStatus != 'Approved') {
         await _auth.signOut();
         setState(() => _errorMessage = 'Your account status is "$accountStatus". Access restricted.');
         return;
       }
 
-      // Read role firestore
+      // Read role from Firestore
       final role = data['role'] ?? 'user';
 
       await _resetFailedAttempts(email);
@@ -265,7 +270,7 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
- //UI
+  // --- UI Build ---
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -402,6 +407,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
+  // --- Helper Widgets ---
   Widget _buildInputField({
     required String label,
     required String hint,
