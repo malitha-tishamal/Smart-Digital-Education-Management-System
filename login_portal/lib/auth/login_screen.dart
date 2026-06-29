@@ -397,7 +397,7 @@ class _LoginPageState extends State<LoginPage> {
             const Padding(
               padding: EdgeInsets.only(bottom: 12.0),
               child: Text(
-                'Developed By Malitha Tishamal',
+                'Developed By Devlk',
                 style: TextStyle(color: AppColors.darkText, fontSize: 11),
               ),
             ),
