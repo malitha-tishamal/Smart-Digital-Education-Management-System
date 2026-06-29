@@ -1,9 +1,11 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart'; 
 import '../core/app_colors.dart';
-import 'login_screen.dart';
+import '../auth_service.dart';
+import '../models/user_model.dart';
+import '../core/dashboard_wrapper.dart';
+import 'login_screen.dart'; 
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -13,15 +15,15 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
+  final AuthService _auth = AuthService();
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _nicController = TextEditingController();
   final TextEditingController _mobileController = TextEditingController();
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
-
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
@@ -55,6 +57,7 @@ class _SignUpPageState extends State<SignUpPage> {
   bool get _isPasswordStrong =>
       _hasMinLength && _hasUppercase && _hasLowercase && _hasDigit && _hasSpecial;
 
+  // Form validators
   String? _validateName(String? value) {
     if (value == null || value.trim().isEmpty) return 'Please enter your full name';
     return null;
@@ -95,61 +98,69 @@ class _SignUpPageState extends State<SignUpPage> {
     return null;
   }
 
+  // 🔥 Sign up using AuthService (creates Auth + Firestore)
   Future<void> _handleSignUp() async {
-    final name = _nameController.text.trim();
-    final email = _emailController.text.trim();
-    final nic = _nicController.text.trim();
-    final mobile = _mobileController.text.trim();
-    final password = _passwordController.text;
-    final confirm = _confirmPasswordController.text;
-
-    String? error;
-    if ((error = _validateName(name)) != null) { setState(() => _errorMessage = error); return; }
-    if ((error = _validateEmail(email)) != null) { setState(() => _errorMessage = error); return; }
-    if ((error = _validateNIC(nic)) != null) { setState(() => _errorMessage = error); return; }
-    if ((error = _validateMobile(mobile)) != null) { setState(() => _errorMessage = error); return; }
-    if ((error = _validatePassword(password)) != null) { setState(() => _errorMessage = error); return; }
-    if ((error = _validateConfirmPassword(confirm)) != null) { setState(() => _errorMessage = error); return; }
+    // Validate all fields using the form
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
 
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
+    final name = _nameController.text.trim();
+    final email = _emailController.text.trim();
+    final nic = _nicController.text.trim();
+    final mobile = _mobileController.text.trim();
+    final password = _passwordController.text;
+
     try {
-      final userCredential = await _auth.createUserWithEmailAndPassword(
+      final AppUser? user = await _auth.signUpWithEmailPassword(
         email: email,
         password: password,
+        name: name,
+        nic: nic,
+        mobile: mobile,
+        role: _selectedRole,
       );
-      final user = userCredential.user;
-      if (user == null) throw Exception('User creation failed');
 
-      await _firestore.collection('users').doc(user.uid).set({
-        'email': email,
-        'name': name,
-        'nic': nic,
-        'mobile': mobile,
-        'role': _selectedRole,
-        'status': 'Approved',
-        'failedLoginAttempts': 0,
-        'lockoutUntil': null,
-        'createdAt': FieldValue.serverTimestamp(),
-      });
-
-      if (mounted) {
+      if (user != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             content: Text('Account created successfully!'),
             backgroundColor: AppColors.primaryPurple,
           ),
         );
+        // Navigate directly to dashboard (DashboardWrapper handles role-based UI)
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const LoginPage()),
+          MaterialPageRoute(builder: (_) => const DashboardWrapper()),
         );
+      } else {
+        setState(() => _errorMessage = 'Sign‑up failed. Please try again.');
       }
     } on FirebaseAuthException catch (e) {
-      setState(() => _errorMessage = e.message ?? 'Sign‑up failed');
+      // Now this works because we imported firebase_auth
+      String message;
+      switch (e.code) {
+        case 'email-already-in-use':
+          message = 'This email is already registered. Please login.';
+          break;
+        case 'invalid-email':
+          message = 'The email address is not valid.';
+          break;
+        case 'weak-password':
+          message = 'Password is too weak. Please choose a stronger one.';
+          break;
+        case 'network-request-failed':
+          message = 'Network error. Check your connection and try again.';
+          break;
+        default:
+          message = e.message ?? 'Sign‑up failed. Please try again.';
+      }
+      setState(() => _errorMessage = message);
     } catch (e) {
       setState(() => _errorMessage = 'An unexpected error occurred. Please try again.');
     } finally {
@@ -176,146 +187,155 @@ class _SignUpPageState extends State<SignUpPage> {
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.symmetric(horizontal: 24.0),
-          child: SingleChildScrollView(
-            physics: const ClampingScrollPhysics(),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    IconButton(
-                      icon: const Icon(Icons.arrow_back, color: AppColors.darkText),
-                      onPressed: () => Navigator.pop(context),
-                    ),
-                    const Spacer(),
-                  ],
-                ),
-                const Text(
-                  'Create Account',
-                  style: TextStyle(
-                    color: AppColors.darkText,
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
+          child: Form(
+            key: _formKey,
+            child: SingleChildScrollView(
+              physics: const ClampingScrollPhysics(),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      IconButton(
+                        icon: const Icon(Icons.arrow_back, color: AppColors.darkText),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                      const Spacer(),
+                    ],
                   ),
-                ),
-                const SizedBox(height: 4),
-                const Text(
-                  'Fill in your details to get started',
-                  style: TextStyle(color: AppColors.darkText, fontSize: 14),
-                ),
-                const SizedBox(height: 30),
-
-                // Name
-                _buildInputField(
-                  label: 'Full Name',
-                  hint: 'John Doe',
-                  icon: Icons.person_outline,
-                  controller: _nameController,
-                ),
-                const SizedBox(height: 16),
-
-                // Email
-                _buildInputField(
-                  label: 'Email',
-                  hint: 'example@email.com',
-                  icon: Icons.email_outlined,
-                  keyboardType: TextInputType.emailAddress,
-                  controller: _emailController,
-                ),
-                const SizedBox(height: 16),
-
-                // NIC
-                _buildInputField(
-                  label: 'NIC',
-                  hint: '123456789V or 12 digits',
-                  icon: Icons.badge_outlined,
-                  controller: _nicController,
-                ),
-                const SizedBox(height: 16),
-
-                // Mobile
-                _buildInputField(
-                  label: 'Mobile Number',
-                  hint: '0712345678',
-                  icon: Icons.phone_android_outlined,
-                  keyboardType: TextInputType.phone,
-                  controller: _mobileController,
-                ),
-                const SizedBox(height: 16),
-
-                // Role
-                _buildRoleDropdown(),
-                const SizedBox(height: 16),
-
-                // Password
-                _buildPasswordField(
-                  label: 'Password',
-                  controller: _passwordController,
-                  obscure: !_isPasswordVisible,
-                  onToggle: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
-                ),
-                const SizedBox(height: 8),
-
-                // Strength indicators
-                _buildStrengthIndicator('At least 8 characters', _hasMinLength),
-                _buildStrengthIndicator('At least one uppercase letter', _hasUppercase),
-                _buildStrengthIndicator('At least one lowercase letter', _hasLowercase),
-                _buildStrengthIndicator('At least one digit', _hasDigit),
-                _buildStrengthIndicator('At least one special character', _hasSpecial),
-                const SizedBox(height: 12),
-
-                // Confirm Password
-                _buildPasswordField(
-                  label: 'Confirm Password',
-                  controller: _confirmPasswordController,
-                  obscure: !_isConfirmPasswordVisible,
-                  onToggle: () => setState(() => _isConfirmPasswordVisible = !_isConfirmPasswordVisible),
-                ),
-                const SizedBox(height: 12),
-
-                if (_errorMessage != null)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: Text(
-                      _errorMessage!,
-                      style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
+                  const Text(
+                    'Create Account',
+                    style: TextStyle(
+                      color: AppColors.darkText,
+                      fontSize: 26,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
+                  const SizedBox(height: 4),
+                  const Text(
+                    'Fill in your details to get started',
+                    style: TextStyle(color: AppColors.darkText, fontSize: 14),
+                  ),
+                  const SizedBox(height: 30),
 
-                _buildGradientButton(
-                  text: _isLoading ? 'Creating Account...' : 'Sign Up',
-                  onPressed: _isLoading ? null : _handleSignUp,
-                ),
-                const SizedBox(height: 20),
+                  // Name
+                  _buildInputField(
+                    label: 'Full Name',
+                    hint: 'John Doe',
+                    icon: Icons.person_outline,
+                    controller: _nameController,
+                    validator: _validateName,
+                  ),
+                  const SizedBox(height: 16),
 
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    const Text(
-                      'Already have an account? ',
-                      style: TextStyle(fontSize: 14, color: AppColors.darkText),
-                    ),
-                    GestureDetector(
-                      onTap: _isLoading
-                          ? null
-                          : () => Navigator.pushReplacement(
-                                context,
-                                MaterialPageRoute(builder: (_) => const LoginPage()),
-                              ),
-                      child: const Text(
-                        'Login',
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: AppColors.primaryPurple,
-                          fontWeight: FontWeight.bold,
-                        ),
+                  // Email
+                  _buildInputField(
+                    label: 'Email',
+                    hint: 'example@email.com',
+                    icon: Icons.email_outlined,
+                    keyboardType: TextInputType.emailAddress,
+                    controller: _emailController,
+                    validator: _validateEmail,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // NIC
+                  _buildInputField(
+                    label: 'NIC',
+                    hint: '123456789V or 12 digits',
+                    icon: Icons.badge_outlined,
+                    controller: _nicController,
+                    validator: _validateNIC,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Mobile
+                  _buildInputField(
+                    label: 'Mobile Number',
+                    hint: '0712345678',
+                    icon: Icons.phone_android_outlined,
+                    keyboardType: TextInputType.phone,
+                    controller: _mobileController,
+                    validator: _validateMobile,
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Role
+                  _buildRoleDropdown(),
+                  const SizedBox(height: 16),
+
+                  // Password
+                  _buildPasswordField(
+                    label: 'Password',
+                    controller: _passwordController,
+                    obscure: !_isPasswordVisible,
+                    onToggle: () => setState(() => _isPasswordVisible = !_isPasswordVisible),
+                    validator: _validatePassword,
+                  ),
+                  const SizedBox(height: 8),
+
+                  // Strength indicators
+                  _buildStrengthIndicator('At least 8 characters', _hasMinLength),
+                  _buildStrengthIndicator('At least one uppercase letter', _hasUppercase),
+                  _buildStrengthIndicator('At least one lowercase letter', _hasLowercase),
+                  _buildStrengthIndicator('At least one digit', _hasDigit),
+                  _buildStrengthIndicator('At least one special character', _hasSpecial),
+                  const SizedBox(height: 12),
+
+                  // Confirm Password
+                  _buildPasswordField(
+                    label: 'Confirm Password',
+                    controller: _confirmPasswordController,
+                    obscure: !_isConfirmPasswordVisible,
+                    onToggle: () => setState(() => _isConfirmPasswordVisible = !_isConfirmPasswordVisible),
+                    validator: _validateConfirmPassword,
+                  ),
+                  const SizedBox(height: 12),
+
+                  if (_errorMessage != null)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: Text(
+                        _errorMessage!,
+                        style: const TextStyle(color: Colors.red, fontWeight: FontWeight.bold),
                       ),
                     ),
-                  ],
-                ),
-                const SizedBox(height: 30),
-              ],
+
+                  _buildGradientButton(
+                    text: _isLoading ? 'Creating Account...' : 'Sign Up',
+                    onPressed: _isLoading ? null : _handleSignUp,
+                  ),
+                  const SizedBox(height: 20),
+
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        'Already have an account? ',
+                        style: TextStyle(fontSize: 14, color: AppColors.darkText),
+                      ),
+                      GestureDetector(
+                        onTap: _isLoading
+                            ? null
+                            : () => Navigator.pushReplacement(
+                                  context,
+                                  MaterialPageRoute(builder: (_) => const LoginPage()),
+                                ),
+                        child: const Text(
+                          'Login',
+                          style: TextStyle(
+                            fontSize: 14,
+                            color: AppColors.primaryPurple,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 30),
+                ],
+              ),
             ),
           ),
         ),
@@ -323,13 +343,14 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
-  // ----- Widget builders -----
+  // ----- Widget builders (unchanged) -----
   Widget _buildInputField({
     required String label,
     required String hint,
     required IconData icon,
     TextInputType keyboardType = TextInputType.text,
     required TextEditingController controller,
+    String? Function(String?)? validator,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -339,12 +360,13 @@ class _SignUpPageState extends State<SignUpPage> {
         Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12), // ✅ removed const
+            borderRadius: BorderRadius.circular(12),
             boxShadow: [BoxShadow(color: AppColors.primaryPurple.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 4))],
           ),
-          child: TextField(
+          child: TextFormField(
             controller: controller,
             keyboardType: keyboardType,
+            validator: validator,
             decoration: InputDecoration(
               hintText: hint,
               hintStyle: TextStyle(color: AppColors.inputBorder.withOpacity(0.8), fontSize: 14),
@@ -352,12 +374,20 @@ class _SignUpPageState extends State<SignUpPage> {
               prefixIcon: Icon(icon, color: AppColors.primaryPurple),
               border: InputBorder.none,
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12), // ✅ removed const
+                borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(color: AppColors.primaryPurple.withOpacity(0.1), width: 1),
               ),
               focusedBorder: const OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(12)), // constant is fine here
+                borderRadius: BorderRadius.all(Radius.circular(12)),
                 borderSide: BorderSide(color: AppColors.primaryPurple, width: 2),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Colors.red, width: 1.5),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Colors.red, width: 2),
               ),
             ),
           ),
@@ -371,6 +401,7 @@ class _SignUpPageState extends State<SignUpPage> {
     required TextEditingController controller,
     required bool obscure,
     required VoidCallback onToggle,
+    String? Function(String?)? validator,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -380,12 +411,13 @@ class _SignUpPageState extends State<SignUpPage> {
         Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12), // ✅ removed const
+            borderRadius: BorderRadius.circular(12),
             boxShadow: [BoxShadow(color: AppColors.primaryPurple.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 4))],
           ),
-          child: TextField(
+          child: TextFormField(
             controller: controller,
             obscureText: obscure,
+            validator: validator,
             decoration: InputDecoration(
               hintText: '*********',
               hintStyle: TextStyle(color: AppColors.inputBorder.withOpacity(0.8), fontSize: 14),
@@ -401,12 +433,20 @@ class _SignUpPageState extends State<SignUpPage> {
               ),
               border: InputBorder.none,
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12), // ✅ removed const
+                borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(color: AppColors.primaryPurple.withOpacity(0.1), width: 1),
               ),
               focusedBorder: const OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(12)), // constant is fine
+                borderRadius: BorderRadius.all(Radius.circular(12)),
                 borderSide: BorderSide(color: AppColors.primaryPurple, width: 2),
+              ),
+              errorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Colors.red, width: 1.5),
+              ),
+              focusedErrorBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: const BorderSide(color: Colors.red, width: 2),
               ),
             ),
           ),
@@ -424,7 +464,7 @@ class _SignUpPageState extends State<SignUpPage> {
         Container(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(12), // ✅ removed const
+            borderRadius: BorderRadius.circular(12),
             boxShadow: [BoxShadow(color: AppColors.primaryPurple.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 4))],
           ),
           child: DropdownButtonFormField<String>(
@@ -434,11 +474,11 @@ class _SignUpPageState extends State<SignUpPage> {
               prefixIcon: const Icon(Icons.admin_panel_settings_outlined, color: AppColors.primaryPurple),
               border: InputBorder.none,
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(12), // ✅ removed const
+                borderRadius: BorderRadius.circular(12),
                 borderSide: BorderSide(color: AppColors.primaryPurple.withOpacity(0.1), width: 1),
               ),
               focusedBorder: const OutlineInputBorder(
-                borderRadius: BorderRadius.all(Radius.circular(12)), // constant is fine
+                borderRadius: BorderRadius.all(Radius.circular(12)),
                 borderSide: BorderSide(color: AppColors.primaryPurple, width: 2),
               ),
             ),
@@ -478,7 +518,7 @@ class _SignUpPageState extends State<SignUpPage> {
         width: double.infinity,
         height: 52,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(12), // ✅ removed const
+          borderRadius: BorderRadius.circular(12),
           gradient: isDisabled
               ? LinearGradient(colors: [Colors.grey.shade400, Colors.grey.shade600])
               : const LinearGradient(
@@ -494,7 +534,7 @@ class _SignUpPageState extends State<SignUpPage> {
           color: Colors.transparent,
           child: InkWell(
             onTap: onPressed,
-            borderRadius: BorderRadius.circular(12), // ✅ removed const
+            borderRadius: BorderRadius.circular(12),
             child: Center(
               child: Text(
                 text,
