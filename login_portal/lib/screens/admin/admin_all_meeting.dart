@@ -23,7 +23,6 @@ class _AdminAllMeetingsScreenState extends State<AdminAllMeetingsScreen> {
   List<Map<String, dynamic>> _upcomingMeetings = [];
   List<Map<String, dynamic>> _pastMeetings = [];
 
-  // Cache for teacher and student details
   final Map<String, Map<String, dynamic>> _teacherCache = {};
   final Map<String, String> _studentNameCache = {};
 
@@ -185,7 +184,7 @@ class _AdminAllMeetingsScreenState extends State<AdminAllMeetingsScreen> {
   }
 
   // =============================================
-  // ADMIN MEETING ACTIONS (Full Access)
+  // ADMIN MEETING ACTIONS
   // =============================================
   
   Future<void> _startMeeting(String meetingId) async {
@@ -195,7 +194,7 @@ class _AdminAllMeetingsScreenState extends State<AdminAllMeetingsScreen> {
         'startedAt': FieldValue.serverTimestamp(),
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Meeting started successfully!'), backgroundColor: Color(0xFF10B981)),
+        const SnackBar(content: Text('Meeting started!'), backgroundColor: Color(0xFF10B981)),
       );
       await _fetchAllMeetings();
     } catch (e) {
@@ -212,7 +211,7 @@ class _AdminAllMeetingsScreenState extends State<AdminAllMeetingsScreen> {
         'endedAt': FieldValue.serverTimestamp(),
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Meeting ended successfully!'), backgroundColor: Color(0xFF10B981)),
+        const SnackBar(content: Text('Meeting ended!'), backgroundColor: Color(0xFF10B981)),
       );
       await _fetchAllMeetings();
     } catch (e) {
@@ -230,7 +229,7 @@ class _AdminAllMeetingsScreenState extends State<AdminAllMeetingsScreen> {
         'disabledBy': _adminName,
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Meeting disabled successfully!'), backgroundColor: Color(0xFFF59E0B)),
+        const SnackBar(content: Text('Meeting disabled!'), backgroundColor: Color(0xFFF59E0B)),
       );
       await _fetchAllMeetings();
     } catch (e) {
@@ -248,7 +247,7 @@ class _AdminAllMeetingsScreenState extends State<AdminAllMeetingsScreen> {
         'enabledBy': _adminName,
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Meeting re-enabled successfully!'), backgroundColor: Color(0xFF10B981)),
+        const SnackBar(content: Text('Meeting re-enabled!'), backgroundColor: Color(0xFF10B981)),
       );
       await _fetchAllMeetings();
     } catch (e) {
@@ -262,7 +261,7 @@ class _AdminAllMeetingsScreenState extends State<AdminAllMeetingsScreen> {
     try {
       await _firestore.collection('zoomMeetings').doc(meetingId).delete();
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Meeting deleted permanently!'), backgroundColor: Color(0xFFEF4444)),
+        const SnackBar(content: Text('Meeting deleted!'), backgroundColor: Color(0xFFEF4444)),
       );
       await _fetchAllMeetings();
     } catch (e) {
@@ -287,11 +286,7 @@ class _AdminAllMeetingsScreenState extends State<AdminAllMeetingsScreen> {
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () { Navigator.pop(ctx); _startMeeting(meeting['id']); },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
             child: const Text('Start Now'),
           ),
         ],
@@ -305,16 +300,12 @@ class _AdminAllMeetingsScreenState extends State<AdminAllMeetingsScreen> {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('End Meeting'),
-        content: Text('End "${meeting['title']}"? Students will no longer be able to join.'),
+        content: Text('End "${meeting['title']}"?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () { Navigator.pop(ctx); _endMeeting(meeting['id']); },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFEF4444),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFEF4444), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
             child: const Text('End Meeting'),
           ),
         ],
@@ -328,16 +319,12 @@ class _AdminAllMeetingsScreenState extends State<AdminAllMeetingsScreen> {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Disable Meeting'),
-        content: Text('Disable "$title"? Students will not be able to join. You can re-enable it later.'),
+        content: Text('Disable "$title"?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () { Navigator.pop(ctx); _disableMeeting(meetingId); },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFF59E0B),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFF59E0B), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
             child: const Text('Disable'),
           ),
         ],
@@ -351,16 +338,12 @@ class _AdminAllMeetingsScreenState extends State<AdminAllMeetingsScreen> {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Re-enable Meeting'),
-        content: Text('Re-enable "$title"? Students will be able to join again.'),
+        content: Text('Re-enable "$title"?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () { Navigator.pop(ctx); _enableMeeting(meetingId); },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF10B981),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF10B981), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
             child: const Text('Re-enable'),
           ),
         ],
@@ -374,22 +357,22 @@ class _AdminAllMeetingsScreenState extends State<AdminAllMeetingsScreen> {
       builder: (ctx) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
         title: const Text('Delete Meeting'),
-        content: Text('Permanently delete "$title"? This action cannot be undone.'),
+        content: Text('Permanently delete "$title"?'),
         actions: [
           TextButton(onPressed: () => Navigator.pop(ctx), child: const Text('Cancel')),
           ElevatedButton(
             onPressed: () { Navigator.pop(ctx); _deleteMeeting(meetingId); },
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFFDC2626),
-              foregroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            child: const Text('Delete Permanently'),
+            style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFFDC2626), foregroundColor: Colors.white, shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10))),
+            child: const Text('Delete'),
           ),
         ],
       ),
     );
   }
+
+  // =============================================
+  // FORMATTING HELPERS
+  // =============================================
 
   String _formatDateTime(DateTime? dateTime) {
     if (dateTime == null) return 'N/A';
@@ -405,37 +388,25 @@ class _AdminAllMeetingsScreenState extends State<AdminAllMeetingsScreen> {
     if (dateTime == null) return '';
     final now = DateTime.now();
     final difference = dateTime.difference(now);
-
     if (difference.isNegative) return 'Started';
-
-    if (difference.inDays > 0) {
-      return '${difference.inDays}d ${difference.inHours % 24}h left';
-    } else if (difference.inHours > 0) {
-      return '${difference.inHours}h ${difference.inMinutes % 60}m left';
-    } else if (difference.inMinutes > 0) {
-      return '${difference.inMinutes}m left';
-    } else {
-      return 'Starting soon';
-    }
+    if (difference.inDays > 0) return '${difference.inDays}d ${difference.inHours % 24}h left';
+    if (difference.inHours > 0) return '${difference.inHours}h ${difference.inMinutes % 60}m left';
+    if (difference.inMinutes > 0) return '${difference.inMinutes}m left';
+    return 'Starting soon';
   }
 
   void _launchZoomMeeting(String link) {
     if (link.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('No Zoom link available'), backgroundColor: Colors.orange),
-      );
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('No Zoom link available'), backgroundColor: Colors.orange));
       return;
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Opening: $link'),
-        backgroundColor: const Color(0xFF6366F1),
-        duration: const Duration(seconds: 3),
-      ),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Opening: $link'), backgroundColor: const Color(0xFF6366F1), duration: const Duration(seconds: 3)));
   }
 
-  // ---- Build Meeting Card with ALL Admin Actions ----
+  // =============================================
+  // MEETING CARD
+  // =============================================
+
   Widget _buildMeetingCard(Map<String, dynamic> meeting) {
     final scheduledTime = meeting['scheduledTime'] as DateTime?;
     final expiryTime = meeting['expiryTime'] as DateTime?;
@@ -482,17 +453,8 @@ class _AdminAllMeetingsScreenState extends State<AdminAllMeetingsScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(
-          color: isActive ? accentColor.withOpacity(0.3) : const Color(0xFFE5E7EB),
-          width: isActive ? 1.5 : 1,
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.04),
-            blurRadius: 8,
-            offset: const Offset(0, 2),
-          ),
-        ],
+        border: Border.all(color: isActive ? accentColor.withOpacity(0.3) : const Color(0xFFE5E7EB), width: isActive ? 1.5 : 1),
+        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 8, offset: const Offset(0, 2))],
       ),
       child: ClipRRect(
         borderRadius: BorderRadius.circular(16),
@@ -509,43 +471,21 @@ class _AdminAllMeetingsScreenState extends State<AdminAllMeetingsScreen> {
                   children: [
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                      decoration: BoxDecoration(
-                        color: accentColor.withOpacity(0.15),
-                        borderRadius: BorderRadius.circular(6),
-                      ),
+                      decoration: BoxDecoration(color: accentColor.withOpacity(0.15), borderRadius: BorderRadius.circular(6)),
                       child: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(statusIcon, size: isActive ? 10 : 12, color: accentColor),
                           const SizedBox(width: 4),
-                          Text(
-                            statusText,
-                            style: TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w700,
-                              color: accentColor,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
+                          Text(statusText, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w700, color: accentColor, letterSpacing: 0.5)),
                         ],
                       ),
                     ),
                     const Spacer(),
                     if (isUpcoming && scheduledTime != null)
-                      Text(
-                        _getTimeRemaining(scheduledTime),
-                        style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: accentColor),
-                      ),
+                      Text(_getTimeRemaining(scheduledTime), style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: accentColor)),
                     if (isActive)
-                      Container(
-                        width: 6,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: accentColor,
-                          shape: BoxShape.circle,
-                          boxShadow: [BoxShadow(color: accentColor.withOpacity(0.4), blurRadius: 4)],
-                        ),
-                      ),
+                      Container(width: 6, height: 6, decoration: BoxDecoration(color: accentColor, shape: BoxShape.circle, boxShadow: [BoxShadow(color: accentColor.withOpacity(0.4), blurRadius: 4)])),
                   ],
                 ),
               ),
@@ -559,221 +499,73 @@ class _AdminAllMeetingsScreenState extends State<AdminAllMeetingsScreen> {
                     // Teacher Info
                     Row(
                       children: [
-                        CircleAvatar(
-                          radius: 16,
-                          backgroundImage: NetworkImage(teacherImageUrl),
-                          backgroundColor: Colors.grey.shade200,
-                          child: teacherImageUrl == _defaultProfileImageUrl
-                              ? const Icon(Icons.person, size: 16, color: Colors.white)
-                              : null,
-                        ),
+                        CircleAvatar(radius: 16, backgroundImage: NetworkImage(teacherImageUrl), backgroundColor: Colors.grey.shade200, child: teacherImageUrl == _defaultProfileImageUrl ? const Icon(Icons.person, size: 16, color: Colors.white) : null),
                         const SizedBox(width: 8),
                         Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                teacherName,
-                                style: const TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w600,
-                                  color: Color(0xFF6B7280),
-                                ),
-                              ),
-                              Text(
-                                'Teacher',
-                                style: TextStyle(fontSize: 10, color: Colors.grey.shade400),
-                              ),
-                            ],
-                          ),
+                          child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                            Text(teacherName, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF6B7280))),
+                            Text('Teacher', style: TextStyle(fontSize: 10, color: Colors.grey.shade400)),
+                          ]),
                         ),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF8B5CF6).withOpacity(0.1),
-                            borderRadius: BorderRadius.circular(6),
-                          ),
-                          child: Text(
-                            'AL ${meeting['academicYear'] ?? 'N/A'}',
-                            style: const TextStyle(
-                              fontSize: 10,
-                              fontWeight: FontWeight.w600,
-                              color: Color(0xFF8B5CF6),
-                            ),
-                          ),
-                        ),
+                        Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: const Color(0xFF8B5CF6).withOpacity(0.1), borderRadius: BorderRadius.circular(6)), child: Text('AL ${meeting['academicYear'] ?? 'N/A'}', style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Color(0xFF8B5CF6)))),
                       ],
                     ),
 
                     const SizedBox(height: 10),
 
                     // Title
-                    Text(
-                      meeting['title'] ?? 'Untitled Meeting',
-                      style: const TextStyle(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w700,
-                        color: Color(0xFF111827),
-                        height: 1.2,
-                      ),
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    Text(meeting['title'] ?? 'Untitled Meeting', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700, color: Color(0xFF111827), height: 1.2), maxLines: 2, overflow: TextOverflow.ellipsis),
 
                     if (meeting['description'] != null && meeting['description'].toString().isNotEmpty)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 4),
-                        child: Text(
-                          meeting['description'],
-                          style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)),
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                      ),
+                      Padding(padding: const EdgeInsets.only(top: 4), child: Text(meeting['description'], style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280)), maxLines: 2, overflow: TextOverflow.ellipsis)),
 
                     const SizedBox(height: 10),
 
                     // Info Chips
-                    Wrap(
-                      spacing: 6,
-                      runSpacing: 6,
-                      children: [
-                        _buildInfoChip(Icons.access_time, '${meeting['duration'] ?? 60}m', const Color(0xFFF59E0B)),
-                        _buildInfoChip(Icons.people, '${studentList.length} Students', const Color(0xFF3B82F6)),
-                        _buildInfoChip(Icons.calendar_today, _formatDateTimeShort(scheduledTime), const Color(0xFF6366F1)),
-                        if (expiryTime != null)
-                          _buildInfoChip(Icons.timer_off, 'Exp: ${_formatDateTimeShort(expiryTime)}', const Color(0xFFEF4444)),
-                      ],
-                    ),
+                    Wrap(spacing: 6, runSpacing: 6, children: [
+                      _buildInfoChip(Icons.access_time, '${meeting['duration'] ?? 60}m', const Color(0xFFF59E0B)),
+                      _buildInfoChip(Icons.people, '${studentList.length} Students', const Color(0xFF3B82F6)),
+                      _buildInfoChip(Icons.calendar_today, _formatDateTimeShort(scheduledTime), const Color(0xFF6366F1)),
+                      if (expiryTime != null) _buildInfoChip(Icons.timer_off, 'Exp: ${_formatDateTimeShort(expiryTime)}', const Color(0xFFEF4444)),
+                    ]),
 
-                    // Attendance Bar (for active/expired)
+                    // Attendance Bar
                     if ((isActive || isExpired) && studentList.isNotEmpty)
                       Padding(
                         padding: const EdgeInsets.only(top: 10),
-                        child: Column(
-                          children: [
-                            Row(
-                              children: [
-                                const Icon(Icons.check_circle, size: 12, color: Color(0xFF10B981)),
-                                const SizedBox(width: 4),
-                                Text(
-                                  'Attendance: ${joinedList.length}/${studentList.length}',
-                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: Color(0xFF6B7280)),
-                                ),
-                                const Spacer(),
-                                Text(
-                                  '${studentList.isEmpty ? 0 : (joinedList.length / studentList.length * 100).toStringAsFixed(0)}%',
-                                  style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF10B981)),
-                                ),
-                              ],
-                            ),
-                            const SizedBox(height: 4),
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(3),
-                              child: LinearProgressIndicator(
-                                value: studentList.isEmpty ? 0 : joinedList.length / studentList.length,
-                                backgroundColor: const Color(0xFFE5E7EB),
-                                valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF10B981)),
-                                minHeight: 3,
-                              ),
-                            ),
-                          ],
-                        ),
+                        child: Column(children: [
+                          Row(children: [
+                            const Icon(Icons.check_circle, size: 12, color: Color(0xFF10B981)),
+                            const SizedBox(width: 4),
+                            Text('${joinedList.length}/${studentList.length} joined', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w500, color: Color(0xFF6B7280))),
+                            const Spacer(),
+                            Text('${studentList.isEmpty ? 0 : (joinedList.length / studentList.length * 100).toStringAsFixed(0)}%', style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700, color: Color(0xFF10B981))),
+                          ]),
+                          const SizedBox(height: 4),
+                          ClipRRect(borderRadius: BorderRadius.circular(3), child: LinearProgressIndicator(value: studentList.isEmpty ? 0 : joinedList.length / studentList.length, backgroundColor: const Color(0xFFE5E7EB), valueColor: const AlwaysStoppedAnimation<Color>(Color(0xFF10B981)), minHeight: 3)),
+                        ]),
                       ),
 
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
 
                     // =============================================
-                    // ADMIN ACTION BUTTONS (FULL ACCESS)
+                    // SUPER COMPACT ACTION BUTTONS
                     // =============================================
-                    
-                    // Row 1: Primary Actions
-                    Row(
-                      children: [
-                        // Join Button (for live/upcoming)
-                        if (isActive)
-                          Expanded(
-                            child: _buildActionButton(
-                              label: 'Join Now',
-                              icon: Icons.video_call,
-                              bgColor: const Color(0xFF10B981),
-                              onTap: () => _launchZoomMeeting(meeting['zoomLink'] ?? ''),
-                            ),
-                          ),
-                        if (isUpcoming)
-                          Expanded(
-                            child: _buildActionButton(
-                              label: 'Start Now',
-                              icon: Icons.play_arrow,
-                              bgColor: const Color(0xFF10B981),
-                              onTap: () => _showStartConfirmation(meeting),
-                            ),
-                          ),
-                        if (isDisabled)
-                          Expanded(
-                            child: _buildActionButton(
-                              label: 'Re-enable',
-                              icon: Icons.refresh,
-                              bgColor: const Color(0xFF10B981),
-                              onTap: () => _showEnableConfirmation(meeting['id'], meeting['title'] ?? ''),
-                            ),
-                          ),
-                        if (isExpired)
-                          Expanded(
-                            child: _buildActionButton(
-                              label: 'View Details',
-                              icon: Icons.info_outline,
-                              bgColor: const Color(0xFF6B7280),
-                              onTap: () => _showMeetingDetails(meeting),
-                            ),
-                          ),
-                        const SizedBox(width: 8),
-                        // View Details Icon
-                        _buildIconButton(
-                          icon: Icons.visibility,
-                          color: const Color(0xFF6366F1),
-                          onTap: () => _showMeetingDetails(meeting),
-                          tooltip: 'View Details',
-                        ),
-                      ],
-                    ),
-
-                    const SizedBox(height: 8),
-
-                    // Row 2: Management Actions (Admin Only)
-                    Row(
-                      children: [
-                        // End Meeting (for active)
-                        if (isActive)
-                          Expanded(
-                            child: _buildSmallActionButton(
-                              label: 'End',
-                              icon: Icons.stop_circle,
-                              bgColor: const Color(0xFFEF4444),
-                              onTap: () => _showEndConfirmation(meeting),
-                            ),
-                          ),
-                        // Disable (for upcoming/active)
-                        if (isUpcoming || isActive)
-                          Expanded(
-                            child: _buildSmallActionButton(
-                              label: 'Disable',
-                              icon: Icons.block,
-                              bgColor: const Color(0xFFF59E0B),
-                              onTap: () => _showDisableConfirmation(meeting['id'], meeting['title'] ?? ''),
-                            ),
-                          ),
-                        // Delete (for all)
-                        Expanded(
-                          child: _buildSmallActionButton(
-                            label: 'Delete',
-                            icon: Icons.delete_outline,
-                            bgColor: const Color(0xFFDC2626),
-                            onTap: () => _showDeleteConfirmation(meeting['id'], meeting['title'] ?? ''),
-                          ),
-                        ),
-                      ],
-                    ),
+                    Row(children: [
+                      // Primary Action
+                      if (isActive) _buildTinyChipButton(label: 'Join', icon: Icons.video_call, color: const Color(0xFF10B981), onTap: () => _launchZoomMeeting(meeting['zoomLink'] ?? '')),
+                      if (isUpcoming) _buildTinyChipButton(label: 'Start', icon: Icons.play_arrow, color: const Color(0xFF10B981), onTap: () => _showStartConfirmation(meeting)),
+                      if (isDisabled) _buildTinyChipButton(label: 'Enable', icon: Icons.refresh, color: const Color(0xFF10B981), onTap: () => _showEnableConfirmation(meeting['id'], meeting['title'] ?? '')),
+                      if (isExpired) _buildTinyChipButton(label: 'View', icon: Icons.visibility_outlined, color: const Color(0xFF6B7280), onTap: () => _showMeetingDetails(meeting)),
+                      
+                      const Spacer(),
+                      
+                      // Management Icons
+                      if (isActive) _buildTinyIconButton(icon: Icons.stop_circle_outlined, color: const Color(0xFFEF4444), onTap: () => _showEndConfirmation(meeting), tooltip: 'End'),
+                      if (isUpcoming || isActive) _buildTinyIconButton(icon: Icons.block_outlined, color: const Color(0xFFF59E0B), onTap: () => _showDisableConfirmation(meeting['id'], meeting['title'] ?? ''), tooltip: 'Disable'),
+                      _buildTinyIconButton(icon: Icons.info_outline, color: const Color(0xFF6366F1), onTap: () => _showMeetingDetails(meeting), tooltip: 'Details'),
+                      _buildTinyIconButton(icon: Icons.delete_outline, color: const Color(0xFFDC2626), onTap: () => _showDeleteConfirmation(meeting['id'], meeting['title'] ?? ''), tooltip: 'Delete'),
+                    ]),
                   ],
                 ),
               ),
@@ -783,6 +575,10 @@ class _AdminAllMeetingsScreenState extends State<AdminAllMeetingsScreen> {
       ),
     );
   }
+
+  // =============================================
+  // MEETING DETAILS MODAL
+  // =============================================
 
   void _showMeetingDetails(Map<String, dynamic> meeting) async {
     final scheduledTime = meeting['scheduledTime'] as DateTime?;
@@ -797,15 +593,12 @@ class _AdminAllMeetingsScreenState extends State<AdminAllMeetingsScreen> {
         await _getStudentName(studentId);
       }
     }
-
     if (!mounted) return;
 
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-      ),
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(24))),
       builder: (ctx) => DraggableScrollableSheet(
         initialChildSize: 0.75,
         maxChildSize: 0.92,
@@ -816,226 +609,81 @@ class _AdminAllMeetingsScreenState extends State<AdminAllMeetingsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFD1D5DB),
-                    borderRadius: BorderRadius.circular(2),
-                  ),
-                ),
-              ),
+              Center(child: Container(width: 40, height: 4, decoration: BoxDecoration(color: const Color(0xFFD1D5DB), borderRadius: BorderRadius.circular(2)))),
               const SizedBox(height: 16),
-
-              Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(10),
-                    decoration: BoxDecoration(
-                      color: const Color(0xFF6366F1).withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: const Icon(Icons.video_call, color: Color(0xFF6366F1), size: 22),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          meeting['title'] ?? 'Meeting Details',
-                          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF111827)),
-                        ),
-                        Text(
-                          'By $teacherName • AL ${meeting['academicYear'] ?? 'N/A'}',
-                          style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280)),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: () => Navigator.pop(ctx),
-                    icon: const Icon(Icons.close, color: Color(0xFF9CA3AF)),
-                  ),
-                ],
-              ),
+              Row(children: [
+                Container(padding: const EdgeInsets.all(10), decoration: BoxDecoration(color: const Color(0xFF6366F1).withOpacity(0.1), borderRadius: BorderRadius.circular(12)), child: const Icon(Icons.video_call, color: Color(0xFF6366F1), size: 22)),
+                const SizedBox(width: 12),
+                Expanded(child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                  Text(meeting['title'] ?? 'Meeting Details', style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF111827))),
+                  Text('By $teacherName • AL ${meeting['academicYear'] ?? 'N/A'}', style: const TextStyle(fontSize: 13, color: Color(0xFF6B7280))),
+                ])),
+                IconButton(onPressed: () => Navigator.pop(ctx), icon: const Icon(Icons.close, color: Color(0xFF9CA3AF))),
+              ]),
               const Divider(height: 24),
-
               Expanded(
                 child: ListView(
                   controller: scrollController,
                   children: [
                     Container(
                       padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF9FAFB),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFE5E7EB)),
-                      ),
-                      child: Column(
-                        children: [
-                          _detailRow(Icons.calendar_today, 'Scheduled', _formatDateTime(scheduledTime), const Color(0xFF3B82F6)),
+                      decoration: BoxDecoration(color: const Color(0xFFF9FAFB), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFFE5E7EB))),
+                      child: Column(children: [
+                        _detailRow(Icons.calendar_today, 'Scheduled', _formatDateTime(scheduledTime), const Color(0xFF3B82F6)),
+                        const Divider(height: 16),
+                        _detailRow(Icons.timer, 'Duration', '${meeting['duration'] ?? 60} minutes', const Color(0xFFF59E0B)),
+                        const Divider(height: 16),
+                        _detailRow(Icons.timer_off, 'Expires', _formatDateTime(expiryTime), const Color(0xFFEF4444)),
+                        const Divider(height: 16),
+                        _detailRow(Icons.info, 'Status', meeting['status'] ?? 'N/A', const Color(0xFF10B981)),
+                        if (meeting['zoomLink']?.isNotEmpty == true) ...[
                           const Divider(height: 16),
-                          _detailRow(Icons.timer, 'Duration', '${meeting['duration'] ?? 60} minutes', const Color(0xFFF59E0B)),
-                          const Divider(height: 16),
-                          _detailRow(Icons.timer_off, 'Expires', _formatDateTime(expiryTime), const Color(0xFFEF4444)),
-                          const Divider(height: 16),
-                          _detailRow(Icons.info, 'Status', meeting['status'] ?? 'N/A', const Color(0xFF10B981)),
-                          if (meeting['zoomLink']?.isNotEmpty == true) ...[
-                            const Divider(height: 16),
-                            _detailRow(Icons.link, 'Zoom Link', meeting['zoomLink'], const Color(0xFF6366F1)),
-                          ],
+                          _detailRow(Icons.link, 'Zoom Link', meeting['zoomLink'], const Color(0xFF6366F1)),
                         ],
-                      ),
+                      ]),
                     ),
-
                     const SizedBox(height: 16),
-
                     Container(
                       padding: const EdgeInsets.all(14),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF0FDF4),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(color: const Color(0xFFBBF7D0)),
-                      ),
-                      child: Row(
-                        children: [
-                          const Icon(Icons.people, color: Color(0xFF10B981), size: 20),
-                          const SizedBox(width: 10),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text('Student Attendance', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF111827))),
-                              Text('${joinedList.length} of ${studentList.length} joined', style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280))),
-                            ],
-                          ),
-                          const Spacer(),
-                          Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                            decoration: BoxDecoration(
-                              color: const Color(0xFF10B981),
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                            child: Text(
-                              '${studentList.isEmpty ? 0 : (joinedList.length / studentList.length * 100).toStringAsFixed(0)}%',
-                              style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white),
-                            ),
-                          ),
-                        ],
-                      ),
+                      decoration: BoxDecoration(color: const Color(0xFFF0FDF4), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFFBBF7D0))),
+                      child: Row(children: [
+                        const Icon(Icons.people, color: Color(0xFF10B981), size: 20),
+                        const SizedBox(width: 10),
+                        Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                          const Text('Student Attendance', style: TextStyle(fontSize: 14, fontWeight: FontWeight.w600, color: Color(0xFF111827))),
+                          Text('${joinedList.length} of ${studentList.length} joined', style: const TextStyle(fontSize: 12, color: Color(0xFF6B7280))),
+                        ]),
+                        const Spacer(),
+                        Container(padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6), decoration: BoxDecoration(color: const Color(0xFF10B981), borderRadius: BorderRadius.circular(12)), child: Text('${studentList.isEmpty ? 0 : (joinedList.length / studentList.length * 100).toStringAsFixed(0)}%', style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white))),
+                      ]),
                     ),
-
                     const SizedBox(height: 16),
-
-                    Row(
-                      children: [
-                        const Icon(Icons.check_circle, size: 18, color: Color(0xFF10B981)),
-                        const SizedBox(width: 8),
-                        Text('Joined Students (${joinedList.length})', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF111827))),
-                      ],
-                    ),
-
+                    Row(children: [
+                      const Icon(Icons.check_circle, size: 18, color: Color(0xFF10B981)),
+                      const SizedBox(width: 8),
+                      Text('Joined Students (${joinedList.length})', style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w600, color: Color(0xFF111827))),
+                    ]),
                     if (joinedList.isEmpty)
-                      Container(
-                        margin: const EdgeInsets.only(top: 12),
-                        padding: const EdgeInsets.all(20),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF9FAFB),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: const Color(0xFFE5E7EB)),
-                        ),
-                        child: const Center(
-                          child: Text('No students have joined yet', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13)),
-                        ),
-                      )
+                      Container(margin: const EdgeInsets.only(top: 12), padding: const EdgeInsets.all(20), decoration: BoxDecoration(color: const Color(0xFFF9FAFB), borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFFE5E7EB))), child: const Center(child: Text('No students joined yet', style: TextStyle(color: Color(0xFF9CA3AF), fontSize: 13))))
                     else
                       ...joinedList.map((studentId) {
                         final joinTimestamp = joinedTimes[studentId];
                         DateTime? joinTime;
-                        if (joinTimestamp is Timestamp) {
-                          joinTime = joinTimestamp.toDate();
-                        }
-
+                        if (joinTimestamp is Timestamp) joinTime = joinTimestamp.toDate();
                         final studentName = _studentNameCache[studentId] ?? 'Loading...';
-                        final initials = studentName
-                            .split(' ')
-                            .take(2)
-                            .map((e) => e.isNotEmpty ? e[0].toUpperCase() : '')
-                            .join();
-
+                        final initials = studentName.split(' ').take(2).map((e) => e.isNotEmpty ? e[0].toUpperCase() : '').join();
                         return Container(
                           margin: const EdgeInsets.only(top: 8),
                           padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: const Color(0xFFE5E7EB)),
-                          ),
-                          child: Row(
-                            children: [
-                              Container(
-                                width: 36,
-                                height: 36,
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [
-                                      const Color(0xFF10B981).withOpacity(0.2),
-                                      const Color(0xFF059669).withOpacity(0.1),
-                                    ],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    initials,
-                                    style: const TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF059669),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              Expanded(
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      studentName,
-                                      style: const TextStyle(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                        color: Color(0xFF111827),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              if (joinTime != null)
-                                Container(
-                                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                  decoration: BoxDecoration(
-                                    color: const Color(0xFF10B981).withOpacity(0.1),
-                                    borderRadius: BorderRadius.circular(6),
-                                  ),
-                                  child: Text(
-                                    DateFormat('hh:mm a').format(joinTime),
-                                    style: const TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.w600,
-                                      color: Color(0xFF10B981),
-                                    ),
-                                  ),
-                                ),
-                            ],
-                          ),
+                          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(10), border: Border.all(color: const Color(0xFFE5E7EB))),
+                          child: Row(children: [
+                            Container(width: 36, height: 36, decoration: BoxDecoration(gradient: LinearGradient(colors: [const Color(0xFF10B981).withOpacity(0.2), const Color(0xFF059669).withOpacity(0.1)], begin: Alignment.topLeft, end: Alignment.bottomRight), borderRadius: BorderRadius.circular(10)), child: Center(child: Text(initials, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Color(0xFF059669))))),
+                            const SizedBox(width: 10),
+                            Expanded(child: Text(studentName, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600, color: Color(0xFF111827)))),
+                            if (joinTime != null) Container(padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4), decoration: BoxDecoration(color: const Color(0xFF10B981).withOpacity(0.1), borderRadius: BorderRadius.circular(6)), child: Text(DateFormat('hh:mm a').format(joinTime), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: Color(0xFF10B981)))),
+                          ]),
                         );
                       }),
-
                     const SizedBox(height: 30),
                   ],
                 ),
@@ -1047,222 +695,115 @@ class _AdminAllMeetingsScreenState extends State<AdminAllMeetingsScreen> {
     );
   }
 
+  // =============================================
+  // UI HELPERS
+  // =============================================
+
   Widget _detailRow(IconData icon, String label, String value, Color color) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(6),
-          ),
-          child: Icon(icon, size: 14, color: color),
-        ),
-        const SizedBox(width: 10),
-        Text('$label:', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Color(0xFF6B7280))),
-        const SizedBox(width: 6),
-        Expanded(
-          child: Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF111827)), textAlign: TextAlign.end, overflow: TextOverflow.ellipsis),
-        ),
-      ],
-    );
+    return Row(children: [
+      Container(padding: const EdgeInsets.all(6), decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(6)), child: Icon(icon, size: 14, color: color)),
+      const SizedBox(width: 10),
+      Text('$label:', style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Color(0xFF6B7280))),
+      const SizedBox(width: 6),
+      Expanded(child: Text(value, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600, color: Color(0xFF111827)), textAlign: TextAlign.end, overflow: TextOverflow.ellipsis)),
+    ]);
   }
 
   Widget _buildInfoChip(IconData icon, String text, Color color) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-      decoration: BoxDecoration(
-        color: color.withOpacity(0.08),
+      decoration: BoxDecoration(color: color.withOpacity(0.08), borderRadius: BorderRadius.circular(6), border: Border.all(color: color.withOpacity(0.15))),
+      child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(icon, size: 11, color: color), const SizedBox(width: 4), Text(text, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: color))]),
+    );
+  }
+
+  Widget _buildTinyChipButton({required String label, required IconData icon, required Color color, required VoidCallback onTap}) {
+    return Material(
+      color: color.withOpacity(0.1),
+      borderRadius: BorderRadius.circular(6),
+      child: InkWell(
+        onTap: onTap,
         borderRadius: BorderRadius.circular(6),
-        border: Border.all(color: color.withOpacity(0.15)),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 11, color: color),
-          const SizedBox(width: 4),
-          Text(text, style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: color)),
-        ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+          child: Row(mainAxisSize: MainAxisSize.min, children: [Icon(icon, size: 12, color: color), const SizedBox(width: 3), Text(label, style: TextStyle(fontSize: 9, fontWeight: FontWeight.w600, color: color))]),
+        ),
       ),
     );
   }
 
-  Widget _buildActionButton({
-    required String label,
-    required IconData icon,
-    required Color bgColor,
-    required VoidCallback onTap,
-  }) {
-    return ElevatedButton.icon(
-      onPressed: onTap,
-      icon: Icon(icon, size: 16),
-      label: Text(label, style: const TextStyle(fontSize: 12, fontWeight: FontWeight.w600)),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: bgColor,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 14),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-        elevation: 0,
-      ),
-    );
-  }
-
-  Widget _buildSmallActionButton({
-    required String label,
-    required IconData icon,
-    required Color bgColor,
-    required VoidCallback onTap,
-  }) {
-    return ElevatedButton.icon(
-      onPressed: onTap,
-      icon: Icon(icon, size: 14),
-      label: Text(label, style: const TextStyle(fontSize: 10, fontWeight: FontWeight.w600)),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: bgColor,
-        foregroundColor: Colors.white,
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 10),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-        elevation: 0,
-      ),
-    );
-  }
-
-  Widget _buildIconButton({
-    required IconData icon,
-    required Color color,
-    required VoidCallback onTap,
-    String? tooltip,
-  }) {
+  Widget _buildTinyIconButton({required IconData icon, required Color color, required VoidCallback onTap, String? tooltip}) {
     return Tooltip(
       message: tooltip ?? '',
       child: Material(
-        color: color.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(10),
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(6),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(10),
-          child: Padding(
-            padding: const EdgeInsets.all(10),
-            child: Icon(icon, size: 18, color: color),
-          ),
+          borderRadius: BorderRadius.circular(6),
+          child: Padding(padding: const EdgeInsets.all(5), child: Icon(icon, size: 14, color: color)),
         ),
       ),
     );
   }
 
   Widget _buildSectionHeader(String title, Color color, int count) {
-    return Row(
-      children: [
-        Container(
-          width: 4,
-          height: 20,
-          decoration: BoxDecoration(
-            color: color,
-            borderRadius: BorderRadius.circular(4),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Text(
-          title,
-          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF111827)),
-        ),
-        const Spacer(),
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-          decoration: BoxDecoration(
-            color: color.withOpacity(0.1),
-            borderRadius: BorderRadius.circular(10),
-          ),
-          child: Text(
-            '$count',
-            style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color),
-          ),
-        ),
-      ],
+    return Row(children: [
+      Container(width: 4, height: 20, decoration: BoxDecoration(color: color, borderRadius: BorderRadius.circular(4))),
+      const SizedBox(width: 10),
+      Text(title, style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Color(0xFF111827))),
+      const Spacer(),
+      Container(padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4), decoration: BoxDecoration(color: color.withOpacity(0.1), borderRadius: BorderRadius.circular(10)), child: Text('$count', style: TextStyle(fontSize: 12, fontWeight: FontWeight.w700, color: color))),
+    ]);
+  }
+
+  Widget _buildSummaryCard(String label, int count, Color color, IconData icon) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.all(10),
+        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(12), border: Border.all(color: const Color(0xFFE5E7EB)), boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.02), blurRadius: 4, offset: const Offset(0, 2))]),
+        child: Column(children: [
+          Row(mainAxisAlignment: MainAxisAlignment.center, children: [Icon(icon, size: 14, color: color), const SizedBox(width: 5), Text(count.toString(), style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color))]),
+          const SizedBox(height: 2),
+          Text(label, style: const TextStyle(fontSize: 10, color: Color(0xFF6B7280))),
+        ]),
+      ),
     );
   }
+
+  // =============================================
+  // HEADER
+  // =============================================
 
   Widget _buildHeader() {
     return Container(
       padding: const EdgeInsets.only(top: 10, left: 20, right: 20, bottom: 20),
       decoration: const BoxDecoration(
-        gradient: LinearGradient(
-          colors: [AppColors.buttonGradientStart, AppColors.buttonGradientEnd],
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-        ),
-        borderRadius: BorderRadius.only(
-          bottomLeft: Radius.circular(30),
-          bottomRight: Radius.circular(30),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: Color(0x10000000),
-            blurRadius: 15,
-            offset: Offset(0, 5),
-          ),
-        ],
+        gradient: LinearGradient(colors: [AppColors.buttonGradientStart, AppColors.buttonGradientEnd], begin: Alignment.topCenter, end: Alignment.bottomCenter),
+        borderRadius: BorderRadius.only(bottomLeft: Radius.circular(30), bottomRight: Radius.circular(30)),
+        boxShadow: [BoxShadow(color: Color(0x10000000), blurRadius: 15, offset: Offset(0, 5))],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
-                onPressed: () => Navigator.pop(context),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
-              ),
-              const Spacer(),
-              Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    _adminName,
-                    style: const TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Logged in as: Admin',
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.white70,
-                    ),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              CircleAvatar(
-                radius: 40,
-                backgroundImage: NetworkImage(_profileImageUrl),
-                backgroundColor: Colors.grey.shade200,
-                onBackgroundImageError: (_, __) {},
-                child: _profileImageUrl == _defaultProfileImageUrl
-                    ? const Icon(Icons.person, size: 40, color: Colors.white)
-                    : null,
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          const Text(
-            'All Meetings',
-            style: TextStyle(
-              fontSize: 16,
-              fontWeight: FontWeight.w600,
-              color: Colors.white,
-            ),
-          ),
-        ],
-      ),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, mainAxisSize: MainAxisSize.min, children: [
+        Row(crossAxisAlignment: CrossAxisAlignment.center, children: [
+          IconButton(icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28), onPressed: () => Navigator.pop(context), padding: EdgeInsets.zero, constraints: const BoxConstraints()),
+          const Spacer(),
+          Column(mainAxisSize: MainAxisSize.min, children: [
+            Text(_adminName, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+            const SizedBox(height: 4),
+            const Text('Logged in as: Admin', style: TextStyle(fontSize: 12, color: Colors.white70)),
+          ]),
+          const Spacer(),
+          CircleAvatar(radius: 40, backgroundImage: NetworkImage(_profileImageUrl), backgroundColor: Colors.grey.shade200, onBackgroundImageError: (_, __) {}, child: _profileImageUrl == _defaultProfileImageUrl ? const Icon(Icons.person, size: 40, color: Colors.white) : null),
+        ]),
+        const SizedBox(height: 20),
+        const Text('All Meetings', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.white)),
+      ]),
     );
   }
+
+  // =============================================
+  // BUILD
+  // =============================================
 
   @override
   Widget build(BuildContext context) {
@@ -1272,144 +813,65 @@ class _AdminAllMeetingsScreenState extends State<AdminAllMeetingsScreen> {
       backgroundColor: const Color(0xFFF9FAFB),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator(color: AppColors.primaryPurple))
-          : Column(
-              children: [
-                _buildHeader(),
-                Expanded(
-                  child: RefreshIndicator(
-                    onRefresh: _fetchAllMeetings,
-                    color: AppColors.primaryPurple,
-                    child: SingleChildScrollView(
-                      physics: const AlwaysScrollableScrollPhysics(),
-                      padding: const EdgeInsets.all(16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
-                            children: [
-                              _buildSummaryCard('Total', totalMeetings, const Color(0xFF6366F1), Icons.video_call),
-                              const SizedBox(width: 10),
-                              _buildSummaryCard('Live', _liveMeetings.length, const Color(0xFF10B981), Icons.live_tv),
-                              const SizedBox(width: 10),
-                              _buildSummaryCard('Upcoming', _upcomingMeetings.length, const Color(0xFF8B5CF6), Icons.schedule),
-                              const SizedBox(width: 10),
-                              _buildSummaryCard('Past', _pastMeetings.length, const Color(0xFF9CA3AF), Icons.history),
-                            ],
-                          ),
-                          const SizedBox(height: 20),
-
-                          if (_liveMeetings.isNotEmpty) ...[
-                            _buildSectionHeader('🔴 Live Now', const Color(0xFF10B981), _liveMeetings.length),
-                            const SizedBox(height: 10),
-                            ..._liveMeetings.map((m) => _buildMeetingCard(m)),
-                          ],
-
-                          if (_upcomingMeetings.isNotEmpty) ...[
-                            _buildSectionHeader('📅 Upcoming', const Color(0xFF6366F1), _upcomingMeetings.length),
-                            const SizedBox(height: 10),
-                            ..._upcomingMeetings.map((m) => _buildMeetingCard(m)),
-                          ],
-
-                          if (_pastMeetings.isNotEmpty) ...[
-                            _buildSectionHeader('📋 Past Meetings', const Color(0xFF9CA3AF), _pastMeetings.length),
-                            const SizedBox(height: 10),
-                            ..._pastMeetings.map((m) => _buildMeetingCard(m)),
-                          ],
-
-                          if (totalMeetings == 0)
-                            Container(
-                              padding: const EdgeInsets.all(40),
-                              decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(16),
-                                border: Border.all(color: const Color(0xFFE5E7EB)),
-                              ),
-                              child: Column(
-                                children: [
-                                  Icon(Icons.video_call_outlined, size: 64, color: Colors.grey.shade300),
-                                  const SizedBox(height: 16),
-                                  const Text(
-                                    'No Meetings Found',
-                                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF374151)),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  const Text(
-                                    'No teachers have created any Zoom classes yet',
-                                    style: TextStyle(fontSize: 14, color: Color(0xFF9CA3AF)),
-                                    textAlign: TextAlign.center,
-                                  ),
-                                ],
-                              ),
-                            ),
-
-                          const SizedBox(height: 20),
-                        ],
-                      ),
-                    ),
+          : Column(children: [
+              _buildHeader(),
+              Expanded(
+                child: RefreshIndicator(
+                  onRefresh: _fetchAllMeetings,
+                  color: AppColors.primaryPurple,
+                  child: SingleChildScrollView(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    padding: const EdgeInsets.all(16),
+                    child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+                      Row(children: [
+                        _buildSummaryCard('Total', totalMeetings, const Color(0xFF6366F1), Icons.video_call),
+                        const SizedBox(width: 10),
+                        _buildSummaryCard('Live', _liveMeetings.length, const Color(0xFF10B981), Icons.live_tv),
+                        const SizedBox(width: 10),
+                        _buildSummaryCard('Upcoming', _upcomingMeetings.length, const Color(0xFF8B5CF6), Icons.schedule),
+                        const SizedBox(width: 10),
+                        _buildSummaryCard('Past', _pastMeetings.length, const Color(0xFF9CA3AF), Icons.history),
+                      ]),
+                      const SizedBox(height: 20),
+                      if (_liveMeetings.isNotEmpty) ...[
+                        _buildSectionHeader('🔴 Live Now', const Color(0xFF10B981), _liveMeetings.length),
+                        const SizedBox(height: 10),
+                        ..._liveMeetings.map((m) => _buildMeetingCard(m)),
+                      ],
+                      if (_upcomingMeetings.isNotEmpty) ...[
+                        _buildSectionHeader('📅 Upcoming', const Color(0xFF6366F1), _upcomingMeetings.length),
+                        const SizedBox(height: 10),
+                        ..._upcomingMeetings.map((m) => _buildMeetingCard(m)),
+                      ],
+                      if (_pastMeetings.isNotEmpty) ...[
+                        _buildSectionHeader('📋 Past Meetings', const Color(0xFF9CA3AF), _pastMeetings.length),
+                        const SizedBox(height: 10),
+                        ..._pastMeetings.map((m) => _buildMeetingCard(m)),
+                      ],
+                      if (totalMeetings == 0)
+                        Container(
+                          padding: const EdgeInsets.all(40),
+                          decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16), border: Border.all(color: const Color(0xFFE5E7EB))),
+                          child: Column(children: [
+                            Icon(Icons.video_call_outlined, size: 64, color: Colors.grey.shade300),
+                            const SizedBox(height: 16),
+                            const Text('No Meetings Found', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Color(0xFF374151))),
+                            const SizedBox(height: 8),
+                            const Text('No teachers have created any Zoom classes yet', style: TextStyle(fontSize: 14, color: Color(0xFF9CA3AF)), textAlign: TextAlign.center),
+                          ]),
+                        ),
+                      const SizedBox(height: 20),
+                    ]),
                   ),
                 ),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.symmetric(vertical: 6),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFF9FAFB),
-                    border: Border(
-                      top: BorderSide(
-                        color: Colors.grey.shade200,
-                        width: 0.5,
-                      ),
-                    ),
-                  ),
-                  child: const Center(
-                    child: Text(
-                      'Developed By Devlk',
-                      style: TextStyle(
-                        fontSize: 10,
-                        color: Colors.black45,
-                        fontWeight: FontWeight.w400,
-                      ),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-    );
-  }
-
-  Widget _buildSummaryCard(String label, int count, Color color, IconData icon) {
-    return Expanded(
-      child: Container(
-        padding: const EdgeInsets.all(10),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: const Color(0xFFE5E7EB)),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.02),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Icon(icon, size: 14, color: color),
-                const SizedBox(width: 5),
-                Text(
-                  count.toString(),
-                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: color),
-                ),
-              ],
-            ),
-            const SizedBox(height: 2),
-            Text(label, style: const TextStyle(fontSize: 10, color: Color(0xFF6B7280))),
-          ],
-        ),
-      ),
+              ),
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(vertical: 6),
+                decoration: BoxDecoration(color: const Color(0xFFF9FAFB), border: Border(top: BorderSide(color: Colors.grey.shade200, width: 0.5))),
+                child: const Center(child: Text('Developed By Devlk', style: TextStyle(fontSize: 14, color: Colors.black45, fontWeight: FontWeight.w400))),
+              ),
+            ]),
     );
   }
 }
