@@ -4,7 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/app_colors.dart';
 import 'signup_screen.dart';
-import '../core/dashboard_wrapper.dart';
+import '../core/dashboard_wrapper.dart'; // 👈 always use this
 import 'forgot_password_screen.dart';
 
 class LoginPage extends StatefulWidget {
@@ -26,7 +26,7 @@ class _LoginPageState extends State<LoginPage> {
   String? _errorMessage;
   Timer? _lockoutTimer;
 
-  // --- Lockout helper methods ---
+  // --- Lockout helper methods (unchanged) ---
   int _getLockoutDuration(int attempts) {
     switch (attempts) {
       case 3: return 30;
@@ -57,8 +57,7 @@ class _LoginPageState extends State<LoginPage> {
     if (userDoc == null) return;
     final data = userDoc.data() as Map<String, dynamic>;
     int attempts = (data['failedLoginAttempts'] ?? 0) + 1;
-    // ✅ Default status to 'Approved' if missing
-    String status = data['status'] ?? 'Approved';
+    String status = data['status'] ?? 'pending';
     Timestamp? lockoutUntil;
 
     if (status == 'Locked') return;
@@ -95,8 +94,7 @@ class _LoginPageState extends State<LoginPage> {
     if (userDoc == null) return (isLocked: false, message: null, lockoutEnd: null);
 
     final data = userDoc.data() as Map<String, dynamic>;
-    // ✅ Default status to 'Approved' if missing
-    final status = data['status'] as String? ?? 'Approved';
+    final status = data['status'] as String? ?? 'pending';
     final lockoutUntil = data['lockoutUntil'] as Timestamp?;
 
     if (status == 'Locked') {
@@ -161,6 +159,17 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+  // --- Update last login ---
+  Future<void> _updateLastLogin(String uid) async {
+    try {
+      await _firestore.collection('users').doc(uid).update({
+        'lastLoginAt': FieldValue.serverTimestamp(),
+      });
+    } catch (e) {
+      debugPrint('Failed to update lastLoginAt: $e');
+    }
+  }
+
   // --- Login logic ---
   Future<void> _handleLogin() async {
     setState(() {
@@ -205,8 +214,8 @@ class _LoginPageState extends State<LoginPage> {
       }
 
       final data = userDoc.data() as Map<String, dynamic>;
-      // ✅ FIX: default to 'Approved' if status is missing
-      final accountStatus = data['status'] ?? 'Approved';
+      final accountStatus = data['status'] ?? 'pending';
+      final role = data['role'] ?? 'user';
 
       if (accountStatus != 'Approved') {
         await _auth.signOut();
@@ -214,22 +223,27 @@ class _LoginPageState extends State<LoginPage> {
         return;
       }
 
-      // Read role from Firestore
-      final role = data['role'] ?? 'user';
-
+      // Reset failed attempts & update last login
       await _resetFailedAttempts(email);
+      await _updateLastLogin(user.uid);
+
       _lockoutTimer?.cancel();
 
       if (mounted) {
+        // Show welcome message with role
+        final roleDisplay = role == 'admin' ? 'Admin' : (role == 'teacher' ? 'Teacher' : 'Student');
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login Successful!'), backgroundColor: AppColors.primaryPurple),
+          SnackBar(
+            content: Text('Welcome, $roleDisplay!'),
+            backgroundColor: AppColors.primaryPurple,
+            duration: const Duration(seconds: 2),
+          ),
         );
 
+        // 👉 Always navigate to DashboardWrapper – it handles role routing
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(
-            builder: (_) => const DashboardWrapper(),
-          ),
+          MaterialPageRoute(builder: (_) => const DashboardWrapper()),
         );
       }
     } on FirebaseAuthException catch (e) {
@@ -270,7 +284,7 @@ class _LoginPageState extends State<LoginPage> {
     super.dispose();
   }
 
-  // --- UI Build ---
+  // --- UI Build (unchanged) ---
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -407,7 +421,7 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 
-  // --- Helper Widgets ---
+  // --- Helper Widgets (unchanged) ---
   Widget _buildInputField({
     required String label,
     required String hint,
