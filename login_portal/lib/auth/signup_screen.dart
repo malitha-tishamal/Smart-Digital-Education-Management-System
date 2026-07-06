@@ -1,11 +1,12 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart'; 
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart'; // added for Firestore
 import '../core/app_colors.dart';
 import '../auth_service.dart';
-import '../models/user_model.dart';
+import '../models/user_model.dart' as user;
 import '../core/dashboard_wrapper.dart';
-import 'login_screen.dart'; 
+import 'login_screen.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
@@ -18,6 +19,7 @@ class _SignUpPageState extends State<SignUpPage> {
   final AuthService _auth = AuthService();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
+  // Controllers
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _nicController = TextEditingController();
@@ -25,17 +27,62 @@ class _SignUpPageState extends State<SignUpPage> {
   final TextEditingController _passwordController = TextEditingController();
   final TextEditingController _confirmPasswordController = TextEditingController();
 
+  // UI state
   bool _isPasswordVisible = false;
   bool _isConfirmPasswordVisible = false;
   bool _isLoading = false;
   String? _errorMessage;
-  String _selectedRole = 'user';
 
+  // Role & Stream
+  String _selectedRole = 'user';
+  String? _selectedStream;
+  List<String> _selectedSubjects = [];
+
+  // AL Year for students
+  String? _selectedALYear;
+  final List<String> _alYears = List.generate(11, (i) => (2020 + i).toString());
+
+  // ---- Student ID ----
+  String _generatedStudentId = '';
+  bool _isGeneratingId = false;
+
+  // Password strength
   bool _hasMinLength = false;
   bool _hasUppercase = false;
   bool _hasLowercase = false;
   bool _hasDigit = false;
   bool _hasSpecial = false;
+
+  // Subjects per stream
+  final Map<String, List<String>> _subjectsByStream = {
+    'Science': [
+      'Biology / Combined Maths',
+      'Physics',
+      'Chemistry / Agriculture / ICT',
+    ],
+    'Commerce': [
+      'Accounting',
+      'Business Studies',
+      'Economics / ICT',
+    ],
+    'Arts': [
+      'Sinhala / Tamil / English',
+      'Geography',
+      'History',
+      'Political Science',
+      'Economics',
+      'Logic',
+      'Media Studies',
+      'Music / Dancing / Drama / Art',
+      'Languages (French, Japanese, etc.)',
+    ],
+    'Technology': [
+      'Science for Technology (compulsory)',
+      'Engineering Technology',
+      'Bio Systems Technology',
+      'ICT',
+    ],
+  };
 
   @override
   void initState() {
@@ -57,7 +104,19 @@ class _SignUpPageState extends State<SignUpPage> {
   bool get _isPasswordStrong =>
       _hasMinLength && _hasUppercase && _hasLowercase && _hasDigit && _hasSpecial;
 
-  // Form validators
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _emailController.dispose();
+    _nicController.dispose();
+    _mobileController.dispose();
+    _passwordController.dispose();
+    _confirmPasswordController.dispose();
+    _passwordController.removeListener(_updatePasswordStrength);
+    super.dispose();
+  }
+
+  // ---------- Validators ----------
   String? _validateName(String? value) {
     if (value == null || value.trim().isEmpty) return 'Please enter your full name';
     return null;
@@ -98,11 +157,82 @@ class _SignUpPageState extends State<SignUpPage> {
     return null;
   }
 
-  // 🔥 Sign up using AuthService (creates Auth + Firestore)
+  // ---- Generate Student ID ----
+  Future<void> _generateStudentId(String stream) async {
+    if (_selectedRole != 'user') return;
+    if (stream.isEmpty) {
+      setState(() => _generatedStudentId = '');
+      return;
+    }
+
+    setState(() => _isGeneratingId = true);
+
+    try {
+      final counterRef = FirebaseFirestore.instance.collection('counters').doc('studentIdCounter');
+
+      // Get the next number using a transaction
+      final int newNumber = await FirebaseFirestore.instance.runTransaction<int>(
+        (transaction) async {
+          final counterDoc = await transaction.get(counterRef);
+          int currentCount = 0;
+          if (counterDoc.exists) {
+            currentCount = counterDoc.data()?['count'] ?? 0;
+          }
+          final newCount = currentCount + 1;
+          transaction.set(counterRef, {'count': newCount}, SetOptions(merge: true));
+          return newCount;
+        },
+      );
+
+      final formattedNumber = newNumber.toString().padLeft(4, '0');
+      final cleanedStream = stream.replaceAll(' ', '');
+      final studentId = 'EduLK/$cleanedStream/$formattedNumber';
+
+      setState(() {
+        _generatedStudentId = studentId;
+        _isGeneratingId = false;
+      });
+    } catch (e) {
+      setState(() {
+        _generatedStudentId = '';
+        _isGeneratingId = false;
+      });
+      // Optionally show error
+    }
+  }
+
+  // ---------- Sign-up logic ----------
   Future<void> _handleSignUp() async {
-    // Validate all fields using the form
     if (!_formKey.currentState!.validate()) {
       return;
+    }
+
+    // Validate stream & subjects for non-admin
+    if (_selectedRole != 'admin') {
+      if (_selectedStream == null || _selectedStream!.isEmpty) {
+        setState(() => _errorMessage = 'Please select a stream');
+        return;
+      }
+      if (_selectedSubjects.isEmpty) {
+        setState(() => _errorMessage = 'Please select at least one subject');
+        return;
+      }
+    }
+
+    // Validate AL Year only for students
+    if (_selectedRole == 'user' && (_selectedALYear == null || _selectedALYear!.isEmpty)) {
+      setState(() => _errorMessage = 'Please select your A/L Year');
+      return;
+    }
+
+    // Ensure student ID is generated (for students)
+    if (_selectedRole == 'user' && _generatedStudentId.isEmpty) {
+      // Generate now if not generated (e.g., if stream was selected but ID not generated)
+      await _generateStudentId(_selectedStream!);
+      if (_generatedStudentId.isEmpty) {
+        setState(() => _errorMessage = 'Failed to generate Student ID. Please try again.');
+        return;
+      }
     }
 
     setState(() {
@@ -115,34 +245,43 @@ class _SignUpPageState extends State<SignUpPage> {
     final nic = _nicController.text.trim();
     final mobile = _mobileController.text.trim();
     final password = _passwordController.text;
+    final stream = (_selectedRole == 'admin') ? '' : _selectedStream!;
+    final subjects = (_selectedRole == 'admin') ? <String>[] : _selectedSubjects;
+    final alYear = (_selectedRole == 'user') ? _selectedALYear! : '';
+    final studentId = (_selectedRole == 'user') ? _generatedStudentId : '';
 
     try {
-      final AppUser? user = await _auth.signUpWithEmailPassword(
+      final user.AppUser? appUser = await _auth.signUpWithEmailPassword(
         email: email,
         password: password,
         name: name,
         nic: nic,
         mobile: mobile,
         role: _selectedRole,
+        stream: stream,
+        subjects: subjects,
+        alYear: alYear,
+        studentId: studentId, 
       );
 
-      if (user != null && mounted) {
+      if (appUser != null && mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
-            content: Text('Account created successfully!'),
+            content: Text('Account created successfully! Please wait for admin approval.'),
             backgroundColor: AppColors.primaryPurple,
+            duration: Duration(seconds: 3),
           ),
         );
-        // Navigate directly to dashboard (DashboardWrapper handles role-based UI)
+
+        await _auth.signOut();
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const DashboardWrapper()),
+          MaterialPageRoute(builder: (_) => const LoginPage()),
         );
       } else {
         setState(() => _errorMessage = 'Sign‑up failed. Please try again.');
       }
     } on FirebaseAuthException catch (e) {
-      // Now this works because we imported firebase_auth
       String message;
       switch (e.code) {
         case 'email-already-in-use':
@@ -168,18 +307,7 @@ class _SignUpPageState extends State<SignUpPage> {
     }
   }
 
-  @override
-  void dispose() {
-    _nameController.dispose();
-    _emailController.dispose();
-    _nicController.dispose();
-    _mobileController.dispose();
-    _passwordController.dispose();
-    _confirmPasswordController.dispose();
-    _passwordController.removeListener(_updatePasswordStrength);
-    super.dispose();
-  }
-
+  // ---------- UI Build ----------
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -261,9 +389,25 @@ class _SignUpPageState extends State<SignUpPage> {
                   ),
                   const SizedBox(height: 16),
 
-                  // Role
+                  // Role dropdown
                   _buildRoleDropdown(),
                   const SizedBox(height: 16),
+
+                  // Stream & Subjects (hidden for admin)
+                  if (_selectedRole != 'admin') ...[
+                    _buildStreamDropdown(),
+                    const SizedBox(height: 16),
+                    if (_selectedStream != null) _buildSubjectSelection(),
+                    const SizedBox(height: 16),
+                  ],
+
+                  // ---- Student ID (only for students) ----
+                  if (_selectedRole == 'user')
+                    _buildStudentIdField(),
+
+                  // AL Year dropdown (only for students)
+                  if (_selectedRole == 'user') _buildALYearDropdown(),
+                  if (_selectedRole == 'user') const SizedBox(height: 16),
 
                   // Password
                   _buildPasswordField(
@@ -343,7 +487,8 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
-  // ----- Widget builders (unchanged) -----
+  // ---------- Widget Builders ----------
+
   Widget _buildInputField({
     required String label,
     required String hint,
@@ -455,11 +600,152 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
-  Widget _buildRoleDropdown() {
+  // ---- Student ID field ----
+  Widget _buildStudentIdField() {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text('Role', style: TextStyle(color: AppColors.darkText, fontSize: 15, fontWeight: FontWeight.w500)),
+        const Text(
+          'Student ID',
+          style: TextStyle(
+            color: AppColors.darkText,
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [BoxShadow(color: AppColors.primaryPurple.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 4))],
+          ),
+          child: TextFormField(
+            controller: TextEditingController(text: _generatedStudentId),
+            enabled: false,
+            style: TextStyle(
+              color: _generatedStudentId.isNotEmpty ? AppColors.primaryPurple : Colors.grey.shade500,
+              fontWeight: FontWeight.bold,
+            ),
+            decoration: InputDecoration(
+              hintText: _isGeneratingId ? 'Generating...' : 'Select stream to generate ID',
+              hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+              prefixIcon: const Icon(Icons.badge_outlined, color: AppColors.primaryPurple),
+              border: InputBorder.none,
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppColors.primaryPurple.withOpacity(0.2), width: 1),
+              ),
+              focusedBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(12)),
+                borderSide: BorderSide(color: AppColors.primaryPurple, width: 2),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(height: 4),
+        if (_generatedStudentId.isNotEmpty)
+          const Text(
+            'This ID will be permanently assigned to you.',
+            style: TextStyle(fontSize: 11, color: Colors.grey),
+          ),
+      ],
+    );
+  }
+
+  // ----- Role dropdown -----
+  Widget _buildRoleDropdown() {
+    return _buildDropdownField(
+      label: 'Role',
+      value: _selectedRole,
+      items: const [
+        DropdownMenuItem(value: 'user', child: Text('Student')),
+        DropdownMenuItem(value: 'teacher', child: Text('Teacher')),
+        DropdownMenuItem(value: 'admin', child: Text('Admin')),
+      ],
+      onChanged: (value) {
+        setState(() {
+          _selectedRole = value!;
+          if (_selectedRole == 'admin') {
+            _selectedStream = null;
+            _selectedSubjects.clear();
+          }
+          if (_selectedRole != 'user') {
+            _selectedALYear = null;
+            _generatedStudentId = '';
+          } else {
+            // If switching to student and stream is selected, generate ID
+            if (_selectedStream != null && _selectedStream!.isNotEmpty) {
+              _generateStudentId(_selectedStream!);
+            }
+          }
+        });
+      },
+      icon: Icons.admin_panel_settings_outlined,
+    );
+  }
+
+  // ----- Stream dropdown -----
+  Widget _buildStreamDropdown() {
+    final label = _selectedRole == 'teacher' ? 'Teaching Stream' : 'Stream';
+    return _buildDropdownField(
+      label: label,
+      value: _selectedStream,
+      items: _subjectsByStream.keys.map((stream) {
+        return DropdownMenuItem<String>(
+          value: stream,
+          child: Text(stream),
+        );
+      }).toList(),
+      onChanged: (value) {
+        setState(() {
+          _selectedStream = value;
+          _selectedSubjects.clear();
+          // If student, regenerate ID with new stream
+          if (_selectedRole == 'user' && value != null && value.isNotEmpty) {
+            _generateStudentId(value);
+          } else {
+            _generatedStudentId = '';
+          }
+        });
+      },
+      icon: Icons.school_outlined,
+    );
+  }
+
+  // ----- AL Year dropdown -----
+  Widget _buildALYearDropdown() {
+    return _buildDropdownField(
+      label: 'A/L Year',
+      value: _selectedALYear,
+      items: _alYears.map((year) {
+        return DropdownMenuItem<String>(
+          value: year,
+          child: Text(year),
+        );
+      }).toList(),
+      onChanged: (value) {
+        setState(() {
+          _selectedALYear = value;
+        });
+      },
+      icon: Icons.calendar_today_outlined,
+    );
+  }
+
+  // ----- Generic dropdown -----
+  Widget _buildDropdownField({
+    required String label,
+    required String? value,
+    required List<DropdownMenuItem<String>> items,
+    required ValueChanged<String?> onChanged,
+    required IconData icon,
+    String? Function(String?)? validator,
+  }) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(label, style: const TextStyle(color: AppColors.darkText, fontSize: 15, fontWeight: FontWeight.w500)),
         const SizedBox(height: 6),
         Container(
           decoration: BoxDecoration(
@@ -468,10 +754,10 @@ class _SignUpPageState extends State<SignUpPage> {
             boxShadow: [BoxShadow(color: AppColors.primaryPurple.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 4))],
           ),
           child: DropdownButtonFormField<String>(
-            value: _selectedRole,
+            value: value,
             decoration: InputDecoration(
               contentPadding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0),
-              prefixIcon: const Icon(Icons.admin_panel_settings_outlined, color: AppColors.primaryPurple),
+              prefixIcon: Icon(icon, color: AppColors.primaryPurple),
               border: InputBorder.none,
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
@@ -482,11 +768,9 @@ class _SignUpPageState extends State<SignUpPage> {
                 borderSide: BorderSide(color: AppColors.primaryPurple, width: 2),
               ),
             ),
-            items: const [
-              DropdownMenuItem(value: 'user', child: Text('User')),
-              DropdownMenuItem(value: 'admin', child: Text('Admin')),
-            ],
-            onChanged: (value) => setState(() => _selectedRole = value!),
+            items: items,
+            onChanged: onChanged,
+            validator: validator,
             style: const TextStyle(color: AppColors.darkText),
             dropdownColor: Colors.white,
             icon: const Icon(Icons.arrow_drop_down, color: AppColors.primaryPurple),
@@ -496,6 +780,53 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
+  // ----- Subject checkboxes -----
+  Widget _buildSubjectSelection() {
+    if (_selectedStream == null) return const SizedBox.shrink();
+    final subjects = _subjectsByStream[_selectedStream!] ?? [];
+    if (subjects.isEmpty) return const SizedBox.shrink();
+
+    final title = _selectedRole == 'teacher' ? 'Select Teaching Subjects' : 'Select Subjects';
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(
+          title,
+          style: const TextStyle(color: AppColors.darkText, fontSize: 15, fontWeight: FontWeight.w500),
+        ),
+        const SizedBox(height: 6),
+        ...subjects.map((subject) {
+          return CheckboxListTile(
+            title: Text(subject),
+            value: _selectedSubjects.contains(subject),
+            onChanged: (bool? checked) {
+              setState(() {
+                if (checked == true) {
+                  _selectedSubjects.add(subject);
+                } else {
+                  _selectedSubjects.remove(subject);
+                }
+              });
+            },
+            activeColor: AppColors.primaryPurple,
+            contentPadding: EdgeInsets.zero,
+            dense: true,
+          );
+        }).toList(),
+        if (_selectedSubjects.isEmpty && _errorMessage != null && _errorMessage!.contains('subject'))
+          Padding(
+            padding: const EdgeInsets.only(top: 4),
+            child: Text(
+              'Please select at least one subject',
+              style: const TextStyle(color: Colors.red, fontSize: 13),
+            ),
+          ),
+      ],
+    );
+  }
+
+  // ----- Strength indicator -----
   Widget _buildStrengthIndicator(String label, bool satisfied) {
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2.0),
@@ -510,6 +841,7 @@ class _SignUpPageState extends State<SignUpPage> {
     );
   }
 
+  // ----- Gradient button -----
   Widget _buildGradientButton({required String text, required VoidCallback? onPressed}) {
     final bool isDisabled = onPressed == null;
     return Opacity(
