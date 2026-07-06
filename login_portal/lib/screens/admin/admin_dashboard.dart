@@ -118,7 +118,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
           'profileImageUrl': data['profileImageUrl'] ?? _defaultProfileImageUrl,
           'lastLoginAt': lastLogin?.toDate(),
           'status': data['status'] ?? 'pending',
-          // 👇 Include student ID if present
           'studentId': data['studentId'] ?? '',
         };
       }).toList();
@@ -362,7 +361,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
         ? const Color(0xFF059669)
         : (user['status'] == 'pending' ? const Color(0xFFF59E0B) : const Color(0xFFDC2626));
 
-    // 👇 Get student ID if available
     final String studentId = user['studentId'] ?? '';
     final bool isStudent = user['role'] == 'user';
 
@@ -466,7 +464,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
                       ),
                     ],
                   ),
-                  // 👇 Display Student ID (only for students)
                   if (isStudent && studentId.isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
@@ -494,7 +491,6 @@ class _AdminDashboardState extends State<AdminDashboard> {
                 color: AppColors.primaryPurple.withOpacity(0.08),
                 borderRadius: BorderRadius.circular(8),
               ),
-              
             ),
           ],
         ),
@@ -654,18 +650,33 @@ class _AdminDashboardState extends State<AdminDashboard> {
                                 );
                               }).toList(),
                             ),
-                          const SizedBox(height: 30),
-                          const Center(
-                            child: Text(
-                              'Developed By Devlk',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.black54,
-                              ),
-                            ),
-                          ),
+                          // Extra padding for fixed footer
                           const SizedBox(height: 20),
                         ],
+                      ),
+                    ),
+                  ),
+                ),
+                // FIXED BOTTOM FOOTER - Non-scrollable
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 6),
+                  decoration: BoxDecoration(
+                    color: AppColors.lightBackground,
+                    border: Border(
+                      top: BorderSide(
+                        color: Colors.grey.shade200,
+                        width: 0.5,
+                      ),
+                    ),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'Developed By Devlk',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.black45,
+                        fontWeight: FontWeight.w400,
                       ),
                     ),
                   ),
