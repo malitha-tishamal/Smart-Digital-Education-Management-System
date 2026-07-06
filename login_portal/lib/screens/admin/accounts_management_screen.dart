@@ -53,13 +53,9 @@ class _AccountsManagementScreenState extends State<AccountsManagementScreen>
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
-    // 👇 Listen to tab changes and rebuild
     _tabController.addListener(() {
       if (_tabController.indexIsChanging) {
-        // Clear search and filters when tab changes (optional)
-        // _searchController.clear();
-        // setState(() { _searchQuery = ''; });
-        setState(() {}); // triggers rebuild so the new tab's data loads
+        setState(() {});
       }
     });
     _searchController.addListener(() {
@@ -238,7 +234,7 @@ class _AccountsManagementScreenState extends State<AccountsManagementScreen>
     );
   }
 
-  // ---- Filters Row (unchanged) ----
+  // ---- Filters Row ----
   Widget _buildFilters() {
     return Row(
       children: [
@@ -365,7 +361,7 @@ class _AccountsManagementScreenState extends State<AccountsManagementScreen>
     );
   }
 
-  // ---- User Card (unchanged) ----
+  // ---- User Card ----
   Widget _buildUserCard(Map<String, dynamic> user, String userId) {
     final bool isCurrentUser = user['id'] == FirebaseAuth.instance.currentUser?.uid;
 
@@ -661,7 +657,7 @@ class _AccountsManagementScreenState extends State<AccountsManagementScreen>
     );
   }
 
-  // ---- Action Modal Dialog (unchanged) ----
+  // ---- Action Modal Dialog ----
   void _showActionModal(Map<String, dynamic> user, String userId, String action) {
     final bool isCurrentUser = user['id'] == FirebaseAuth.instance.currentUser?.uid;
 
@@ -811,7 +807,7 @@ class _AccountsManagementScreenState extends State<AccountsManagementScreen>
     );
   }
 
-  // ---- Perform Action (unchanged) ----
+  // ---- Perform Action ----
   Future<void> _performAction(Map<String, dynamic> user, String userId, String action) async {
     try {
       final userRef = FirebaseFirestore.instance.collection('users').doc(userId);
@@ -853,13 +849,10 @@ class _AccountsManagementScreenState extends State<AccountsManagementScreen>
     );
   }
 
-  // ---- StreamBuilder for Users (updated to refresh on tab change) ----
+  // ---- StreamBuilder for Users ----
   Widget _buildUserList() {
-    // Use a key that changes when the tab changes to force the StreamBuilder to rebuild.
-    // Alternatively, we rely on setState called from tab listener.
-    // We'll use a unique key based on the current role.
     return StreamBuilder<QuerySnapshot>(
-      key: ValueKey(_currentRole), // 👈 forces rebuild on tab change
+      key: ValueKey(_currentRole),
       stream: FirebaseFirestore.instance
           .collection('users')
           .where('role', isEqualTo: _currentRole)
@@ -922,7 +915,6 @@ class _AccountsManagementScreenState extends State<AccountsManagementScreen>
           );
         }
 
-        // Apply filters (status, stream) and search in memory
         var users = snapshot.data!.docs.map((doc) {
           final data = doc.data() as Map<String, dynamic>;
           return {
@@ -931,17 +923,14 @@ class _AccountsManagementScreenState extends State<AccountsManagementScreen>
           };
         }).toList();
 
-        // Status filter
         if (_selectedStatusFilter != null && _selectedStatusFilter != 'All') {
           users = users.where((u) => u['status'] == _selectedStatusFilter).toList();
         }
 
-        // Stream filter (only for students/teachers)
         if (_showStreamFilter && _selectedStreamFilter != null && _selectedStreamFilter != 'All') {
           users = users.where((u) => u['stream'] == _selectedStreamFilter).toList();
         }
 
-        // Search filter
         if (_searchQuery.isNotEmpty) {
           users = users.where((user) {
             final name = (user['name'] ?? '').toLowerCase();
@@ -1025,6 +1014,30 @@ class _AccountsManagementScreenState extends State<AccountsManagementScreen>
                           child: _buildUserList(),
                         ),
                       ],
+                    ),
+                  ),
+                ),
+                // FIXED BOTTOM FOOTER - Non-scrollable
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.lightBackground,
+                    border: Border(
+                      top: BorderSide(
+                        color: Colors.grey.shade200,
+                        width: 0.5,
+                      ),
+                    ),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'Developed By Devlk',
+                      style: TextStyle(
+                        fontSize: 14,
+                        color: Colors.black54,
+                        fontWeight: FontWeight.w500,
+                      ),
                     ),
                   ),
                 ),
