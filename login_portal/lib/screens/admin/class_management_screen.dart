@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
-import 'class_enrollment_screen.dart';  // ✅ Must be in the same folder
+import 'class_enrollment_screen.dart';
 import '../../core/app_colors.dart';
 
 class ClassManagementScreen extends StatefulWidget {
@@ -60,7 +60,7 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
     }
   }
 
-  // ---- Modern Header (matches Admin Dashboard) ----
+  // ---- Modern Header ----
   Widget _buildHeader() {
     final String imageUrl =
         _profileImageUrl.isNotEmpty ? _profileImageUrl : _defaultProfileImageUrl;
@@ -141,14 +141,6 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
               color: Colors.white,
             ),
           ),
-          const SizedBox(height: 4),
-          const Text(
-            'Manage all teacher classes and enrollments',
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.white70,
-            ),
-          ),
         ],
       ),
     );
@@ -173,10 +165,11 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
         controller: _searchController,
         decoration: InputDecoration(
           hintText: 'Search by teacher name or stream...',
-          prefixIcon: Icon(Icons.search, color: Colors.grey.shade500),
+          hintStyle: TextStyle(color: Colors.grey.shade400, fontSize: 14),
+          prefixIcon: Icon(Icons.search_rounded, color: Colors.grey.shade400, size: 22),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
-                  icon: Icon(Icons.clear, color: Colors.grey.shade400),
+                  icon: Icon(Icons.clear_rounded, color: Colors.grey.shade400, size: 20),
                   onPressed: () {
                     _searchController.clear();
                     setState(() => _searchQuery = '');
@@ -190,7 +183,7 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
     );
   }
 
-  // ---- Combined Payment Settings Dialog (Payment + Gateway) ----
+  // ---- Payment Settings Dialog ----
   Future<void> _showPaymentSettingsDialog(
       BuildContext context, String teacherId, Map<String, dynamic> teacher) async {
     bool paymentRequired = teacher['paymentRequired'] ?? false;
@@ -208,50 +201,90 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
       builder: (ctx) => StatefulBuilder(
         builder: (ctx, setStateDialog) {
           return AlertDialog(
-            title: const Text('Payment & Gateway Settings'),
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+            title: const Row(
+              children: [
+                Icon(Icons.settings, color: AppColors.primaryPurple, size: 22),
+                SizedBox(width: 8),
+                Text('Payment & Gateway'),
+              ],
+            ),
             content: SingleChildScrollView(
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // Payment Required
-                  SwitchListTile(
-                    title: const Text('Require Payment'),
-                    value: paymentRequired,
-                    onChanged: (val) => setStateDialog(() => paymentRequired = val),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: SwitchListTile(
+                      title: const Text('Require Payment', style: TextStyle(fontWeight: FontWeight.w600)),
+                      value: paymentRequired,
+                      activeColor: AppColors.primaryPurple,
+                      contentPadding: EdgeInsets.zero,
+                      onChanged: (val) => setStateDialog(() => paymentRequired = val),
+                    ),
                   ),
-                  if (paymentRequired)
+                  if (paymentRequired) ...[
+                    const SizedBox(height: 10),
                     TextField(
                       controller: feeController,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Monthly Fee (LKR)',
                         prefixText: 'Rs. ',
-                        border: OutlineInputBorder(),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: AppColors.primaryPurple, width: 2),
+                        ),
                       ),
                     ),
-                  const Divider(height: 30),
-                  // Payment Gateway
-                  SwitchListTile(
-                    title: const Text('Enable Payment Gateway'),
-                    value: gatewayEnabled,
-                    onChanged: (val) => setStateDialog(() => gatewayEnabled = val),
+                  ],
+                  const SizedBox(height: 16),
+                  const Divider(),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade50,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: SwitchListTile(
+                      title: const Text('Payment Gateway', style: TextStyle(fontWeight: FontWeight.w600)),
+                      value: gatewayEnabled,
+                      activeColor: AppColors.primaryPurple,
+                      contentPadding: EdgeInsets.zero,
+                      onChanged: (val) => setStateDialog(() => gatewayEnabled = val),
+                    ),
                   ),
                   if (gatewayEnabled) ...[
+                    const SizedBox(height: 10),
                     TextField(
                       controller: linkController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Payment Link (URL)',
-                        border: OutlineInputBorder(),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: AppColors.primaryPurple, width: 2),
+                        ),
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    const SizedBox(height: 10),
                     TextField(
                       controller: amountController,
                       keyboardType: TextInputType.number,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Gateway Amount (LKR)',
                         prefixText: 'Rs. ',
-                        border: OutlineInputBorder(),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(10)),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(10),
+                          borderSide: const BorderSide(color: AppColors.primaryPurple, width: 2),
+                        ),
                       ),
                     ),
                   ],
@@ -284,7 +317,7 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
                     Navigator.of(ctx).pop();
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Payment and gateway settings saved!'),
+                        content: Text('Settings saved!'),
                         backgroundColor: AppColors.primaryPurple,
                       ),
                     );
@@ -298,6 +331,7 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
                 style: ElevatedButton.styleFrom(
                   backgroundColor: AppColors.primaryPurple,
                   foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
                 child: const Text('Save'),
               ),
@@ -308,7 +342,7 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
     );
   }
 
-  // ---- Teacher Card (Modern) ----
+  // ---- MODERN COMPACT TEACHER CARD ----
   Widget _buildTeacherCard(
     Map<String, dynamic> teacher,
     String teacherId,
@@ -324,274 +358,297 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
     final gatewayEnabled = teacher['paymentGateway']?['enabled'] ?? false;
     final gatewayAmount = teacher['paymentGateway']?['amount'] ?? 0.0;
 
-    // Determine main payment status icon
-    IconData paymentIcon;
-    Color paymentColor;
-    if (paymentRequired) {
-      paymentIcon = Icons.lock;
-      paymentColor = Colors.orange;
-    } else {
-      paymentIcon = Icons.lock_open;
-      paymentColor = Colors.green;
-    }
-
-    return Card(
-      elevation: 3,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(18),
-        side: BorderSide(color: Colors.grey.shade100, width: 1),
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+        border: Border.all(color: Colors.grey.shade100),
       ),
-      margin: const EdgeInsets.only(bottom: 14),
-      child: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+      child: Material(
+        color: Colors.transparent,
+        borderRadius: BorderRadius.circular(16),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(16),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => ClassEnrollmentScreen(
+                  teacherId: teacherId,
+                  teacherName: name,
+                  teacherEmail: email,
+                  stream: stream,
+                  subjects: subjects,
+                ),
+              ),
+            );
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(14),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  radius: 32,
-                  backgroundImage: profileImage.isNotEmpty
-                      ? NetworkImage(profileImage)
-                      : null,
-                  backgroundColor: Colors.grey.shade200,
-                  child: profileImage.isEmpty
-                      ? Text(
-                          name.isNotEmpty ? name[0].toUpperCase() : '?',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        )
-                      : null,
-                ),
-                const SizedBox(width: 14),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        name,
-                        style: const TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.darkText,
-                        ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        email,
-                        style: TextStyle(
-                          fontSize: 14,
-                          color: Colors.grey.shade600,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+                // Top Row: Avatar + Info + Payment Icons
                 Row(
                   children: [
-                    // Payment status icon (click to open settings)
-                    IconButton(
-                      icon: Icon(paymentIcon, color: paymentColor, size: 20),
-                      tooltip: paymentRequired ? 'Payment Required' : 'Free',
-                      onPressed: () => _showPaymentSettingsDialog(context, teacherId, teacher),
-                    ),
-                    // Gateway indicator
-                    if (gatewayEnabled)
-                      Container(
-                        margin: const EdgeInsets.only(right: 4),
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.blue.shade50,
-                          borderRadius: BorderRadius.circular(8),
-                          border: Border.all(color: Colors.blue.shade200),
-                        ),
-                        child: Text(
-                          '💳',
-                          style: TextStyle(fontSize: 12),
-                        ),
-                      ),
+                    // Avatar
                     Container(
-                      padding: const EdgeInsets.all(6),
+                      width: 50,
+                      height: 50,
                       decoration: BoxDecoration(
-                        color: AppColors.primaryPurple.withOpacity(0.08),
-                        borderRadius: BorderRadius.circular(10),
+                        shape: BoxShape.circle,
+                        gradient: profileImage.isEmpty
+                            ? const LinearGradient(
+                                colors: [Color(0xFF6366F1), Color(0xFF4F46E5)],
+                              )
+                            : null,
+                        image: profileImage.isNotEmpty
+                            ? DecorationImage(image: NetworkImage(profileImage), fit: BoxFit.cover)
+                            : null,
+                        border: Border.all(color: Colors.grey.shade200, width: 2),
                       ),
-                      child: const Icon(
-                        Icons.chevron_right_rounded,
-                        color: AppColors.primaryPurple,
+                      child: profileImage.isEmpty
+                          ? Center(
+                              child: Text(
+                                name.isNotEmpty ? name[0].toUpperCase() : '?',
+                                style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white),
+                              ),
+                            )
+                          : null,
+                    ),
+                    const SizedBox(width: 12),
+
+                    // Name & Email
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            name,
+                            style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700, color: Color(0xFF111827)),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            email,
+                            style: TextStyle(fontSize: 12, color: Colors.grey.shade500),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ],
+                      ),
+                    ),
+
+                    // Payment Status Icons
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        // Payment lock icon
+                        GestureDetector(
+                          onTap: () => _showPaymentSettingsDialog(context, teacherId, teacher),
+                          child: Container(
+                            padding: const EdgeInsets.all(7),
+                            decoration: BoxDecoration(
+                              color: paymentRequired
+                                  ? Colors.orange.withOpacity(0.1)
+                                  : Colors.green.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Icon(
+                              paymentRequired ? Icons.lock : Icons.lock_open,
+                              size: 16,
+                              color: paymentRequired ? Colors.orange : Colors.green,
+                            ),
+                          ),
+                        ),
+                        if (gatewayEnabled) ...[
+                          const SizedBox(width: 6),
+                          Container(
+                            padding: const EdgeInsets.all(7),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.withOpacity(0.1),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: const Icon(Icons.credit_card, size: 16, color: Colors.blue),
+                          ),
+                        ],
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.all(7),
+                          decoration: BoxDecoration(
+                            color: AppColors.primaryPurple.withOpacity(0.08),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: const Icon(Icons.chevron_right, size: 16, color: AppColors.primaryPurple),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+
+                const SizedBox(height: 10),
+
+                // Chips Row
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: [
+                    // Stream Chip
+                    if (stream.isNotEmpty)
+                      _buildChip(
+                        icon: Icons.school_rounded,
+                        label: stream,
+                        bgColor: Colors.purple.shade50,
+                        textColor: Colors.purple.shade700,
+                      ),
+                    // Subjects (max 3)
+                    ...subjects.take(3).map((s) => _buildChip(
+                          icon: Icons.book_rounded,
+                          label: s,
+                          bgColor: Colors.blue.shade50,
+                          textColor: Colors.blue.shade700,
+                        )),
+                    if (subjects.length > 3)
+                      _buildChip(
+                        icon: Icons.more_horiz,
+                        label: '+${subjects.length - 3}',
+                        bgColor: Colors.grey.shade100,
+                        textColor: Colors.grey.shade600,
+                      ),
+                  ],
+                ),
+
+                // Payment Info Chips (if applicable)
+                if (paymentRequired || gatewayEnabled)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 6),
+                    child: Wrap(
+                      spacing: 6,
+                      runSpacing: 6,
+                      children: [
+                        if (paymentRequired)
+                          _buildChip(
+                            icon: Icons.currency_rupee,
+                            label: 'Rs. ${monthlyFee.toStringAsFixed(0)}/mo',
+                            bgColor: Colors.red.shade50,
+                            textColor: Colors.red.shade700,
+                          ),
+                        if (gatewayEnabled && gatewayAmount > 0)
+                          _buildChip(
+                            icon: Icons.credit_card,
+                            label: 'Gateway: Rs. ${gatewayAmount.toStringAsFixed(0)}',
+                            bgColor: Colors.teal.shade50,
+                            textColor: Colors.teal.shade700,
+                          ),
+                      ],
+                    ),
+                  ),
+
+                const SizedBox(height: 10),
+
+                // Bottom Row: Student Count + Manage Button
+                Row(
+                  children: [
+                    // Student Count
+                    FutureBuilder<QuerySnapshot>(
+                      future: FirebaseFirestore.instance
+                          .collection('enrollments')
+                          .where('classId', isEqualTo: teacherId)
+                          .get(),
+                      builder: (context, snapshot) {
+                        int count = 0;
+                        if (snapshot.hasData) {
+                          count = snapshot.data!.docs.length;
+                        }
+                        return Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade50,
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.people_outline, size: 14, color: Colors.grey.shade600),
+                              const SizedBox(width: 4),
+                              Text(
+                                '$count Students',
+                                style: TextStyle(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.grey.shade700),
+                              ),
+                            ],
+                          ),
+                        );
+                      },
+                    ),
+                    const Spacer(),
+                    // Manage Button
+                    ElevatedButton.icon(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => ClassEnrollmentScreen(
+                              teacherId: teacherId,
+                              teacherName: name,
+                              teacherEmail: email,
+                              stream: stream,
+                              subjects: subjects,
+                            ),
+                          ),
+                        );
+                      },
+                      icon: const Icon(Icons.people_alt, size: 14),
+                      label: const Text('Manage', style: TextStyle(fontSize: 11, fontWeight: FontWeight.w600)),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: AppColors.primaryPurple,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        elevation: 0,
                       ),
                     ),
                   ],
                 ),
               ],
             ),
-            const SizedBox(height: 12),
-            Wrap(
-              spacing: 6,
-              runSpacing: 6,
-              children: [
-                if (stream.isNotEmpty)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.orange.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.orange.shade200),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.place_outlined, size: 14, color: Colors.orange.shade700),
-                        const SizedBox(width: 4),
-                        Text(
-                          stream,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.orange.shade700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ...subjects.map(
-                  (s) => Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.blue.shade200),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.book_outlined, size: 14, color: Colors.blue.shade700),
-                        const SizedBox(width: 4),
-                        Text(
-                          s,
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.blue.shade700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                if (paymentRequired)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.red.shade200),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.currency_rupee, size: 14, color: Colors.red.shade700),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Rs. ${monthlyFee.toStringAsFixed(2)}/month',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.red.shade700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                if (gatewayEnabled)
-                  Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.blue.shade50,
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.blue.shade200),
-                    ),
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Icon(Icons.credit_card, size: 14, color: Colors.blue.shade700),
-                        const SizedBox(width: 4),
-                        Text(
-                          'Gateway: Rs. ${gatewayAmount.toStringAsFixed(2)}',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.w500,
-                            color: Colors.blue.shade700,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-              ],
-            ),
-            const SizedBox(height: 14),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                FutureBuilder<QuerySnapshot>(
-                  future: FirebaseFirestore.instance
-                      .collection('enrollments')
-                      .where('classId', isEqualTo: teacherId)
-                      .get(),
-                  builder: (context, snapshot) {
-                    int count = 0;
-                    if (snapshot.hasData) {
-                      count = snapshot.data!.docs.length;
-                    }
-                    return Row(
-                      children: [
-                        Icon(Icons.people_outline, size: 18, color: Colors.grey.shade600),
-                        const SizedBox(width: 6),
-                        Text(
-                          '$count enrolled',
-                          style: TextStyle(
-                            fontSize: 13,
-                            color: Colors.grey.shade600,
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-                ElevatedButton.icon(
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (_) => ClassEnrollmentScreen(
-                          teacherId: teacherId,
-                          teacherName: name,
-                          teacherEmail: email,
-                          stream: stream,
-                          subjects: subjects,
-                        ),
-                      ),
-                    );
-                  },
-                  icon: const Icon(Icons.people_alt, size: 18),
-                  label: const Text('Manage Students'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primaryPurple,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    elevation: 0,
-                  ),
-                ),
-              ],
-            ),
-          ],
+          ),
         ),
+      ),
+    );
+  }
+
+  // ---- Compact Chip ----
+  Widget _buildChip({
+    required IconData icon,
+    required String label,
+    required Color bgColor,
+    required Color textColor,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: bgColor,
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(icon, size: 11, color: textColor),
+          const SizedBox(width: 4),
+          Text(
+            label,
+            style: TextStyle(fontSize: 10, fontWeight: FontWeight.w600, color: textColor),
+          ),
+        ],
       ),
     );
   }
@@ -615,12 +672,7 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
                     builder: (context, snapshot) {
                       if (snapshot.connectionState == ConnectionState.waiting) {
                         return const Center(
-                          child: Padding(
-                            padding: EdgeInsets.all(40),
-                            child: CircularProgressIndicator(
-                              color: AppColors.primaryPurple,
-                            ),
-                          ),
+                          child: CircularProgressIndicator(color: AppColors.primaryPurple),
                         );
                       }
                       if (snapshot.hasError) {
@@ -630,10 +682,7 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
                             children: [
                               Icon(Icons.error_outline, size: 60, color: Colors.red.shade300),
                               const SizedBox(height: 12),
-                              Text(
-                                'Error: ${snapshot.error}',
-                                style: TextStyle(color: Colors.grey.shade600),
-                              ),
+                              Text('Error: ${snapshot.error}', style: TextStyle(color: Colors.grey.shade600)),
                             ],
                           ),
                         );
@@ -645,22 +694,9 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
                             children: [
                               Icon(Icons.class_outlined, size: 80, color: Colors.grey.shade300),
                               const SizedBox(height: 16),
-                              Text(
-                                'No Classes Found',
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.grey.shade500,
-                                ),
-                              ),
-                              const SizedBox(height: 8),
-                              Text(
-                                'No teachers have been registered yet.',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey.shade400,
-                                ),
-                              ),
+                              Text('No Classes Found', style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.grey.shade500)),
+                              const SizedBox(height: 6),
+                              Text('No teachers registered yet', style: TextStyle(fontSize: 14, color: Colors.grey.shade400)),
                             ],
                           ),
                         );
@@ -681,42 +717,40 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
                             children: [
                               Icon(Icons.search_off, size: 60, color: Colors.grey.shade300),
                               const SizedBox(height: 12),
-                              Text(
-                                'No matching classes',
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.grey.shade500,
-                                ),
-                              ),
-                              const SizedBox(height: 6),
-                              Text(
-                                'Try adjusting your search',
-                                style: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey.shade400,
-                                ),
-                              ),
+                              Text('No matching teachers', style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500, color: Colors.grey.shade500)),
                             ],
                           ),
                         );
                       }
 
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 16),
-                        child: ListView.builder(
-                          physics: const AlwaysScrollableScrollPhysics(
-                            parent: BouncingScrollPhysics(),
-                          ),
-                          itemCount: teachers.length,
-                          itemBuilder: (context, index) {
-                            final teacher = teachers[index].data() as Map<String, dynamic>;
-                            final teacherId = teachers[index].id;
-                            return _buildTeacherCard(teacher, teacherId, context);
-                          },
-                        ),
+                      return ListView.builder(
+                        physics: const BouncingScrollPhysics(),
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        itemCount: teachers.length,
+                        itemBuilder: (context, index) {
+                          final teacher = teachers[index].data() as Map<String, dynamic>;
+                          final teacherId = teachers[index].id;
+                          return _buildTeacherCard(teacher, teacherId, context);
+                        },
                       );
                     },
+                  ),
+                ),
+                // Fixed Footer
+                Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.lightBackground,
+                    border: Border(
+                      top: BorderSide(color: Colors.grey.shade200, width: 0.5),
+                    ),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'Developed By Devlk',
+                      style: TextStyle(fontSize: 14, color: Colors.black54, fontWeight: FontWeight.w500),
+                    ),
                   ),
                 ),
               ],
