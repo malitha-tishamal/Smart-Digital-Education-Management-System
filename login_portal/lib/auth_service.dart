@@ -8,7 +8,6 @@ class AuthService {
 
   Stream<User?> get authStateChanges => _auth.authStateChanges();
 
-  // Sign up
   Future<AppUser?> signUpWithEmailPassword({
     required String email,
     required String password,
@@ -16,6 +15,10 @@ class AuthService {
     required String nic,
     required String mobile,
     required String role,
+    required String stream,
+    required List<String> subjects,
+    String alYear = '', 
+    String studentId = '', 
   }) async {
     try {
       UserCredential result = await _auth.createUserWithEmailAndPassword(
@@ -31,6 +34,11 @@ class AuthService {
           nic: nic,
           mobile: mobile,
           role: role,
+          stream: stream,
+          subjects: subjects,
+          status: 'pending',
+          alYear: alYear, 
+          studentId: studentId,
         );
         await _firestore.collection('users').doc(user.uid).set(appUser.toMap());
         return appUser;
@@ -42,25 +50,8 @@ class AuthService {
     }
   }
 
-  // Sign in
-  Future<AppUser?> signInWithEmailPassword(String email, String password) async {
-    try {
-      UserCredential result = await _auth.signInWithEmailAndPassword(
-        email: email,
-        password: password,
-      );
-      User? user = result.user;
-      if (user != null) {
-        return await getUserProfile(user.uid);
-      }
-      return null;
-    } catch (e) {
-      print('SignIn error: $e');
-      rethrow;
-    }
-  }
 
-  // Get user profile from Firestore
+
   Future<AppUser?> getUserProfile(String uid) async {
     try {
       DocumentSnapshot doc = await _firestore.collection('users').doc(uid).get();
