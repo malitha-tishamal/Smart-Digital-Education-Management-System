@@ -2,27 +2,27 @@ import 'dart:io';
 import 'dart:async';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
-
 import '../core/app_colors.dart';
 import '../auth/login_screen.dart';
+import 'student_drawer.dart'; // 👈 import the drawer
 
-class UserDashboard extends StatefulWidget {
-  const UserDashboard({super.key});
+class StudentProfileScreen extends StatefulWidget {
+  const StudentProfileScreen({super.key});
 
   @override
-  State<UserDashboard> createState() => _UserDashboardState();
+  State<StudentProfileScreen> createState() => _StudentProfileScreenState();
 }
 
-class _UserDashboardState extends State<UserDashboard> {
+class _StudentProfileScreenState extends State<StudentProfileScreen> {
   final _auth = FirebaseAuth.instance;
   final _firestore = FirebaseFirestore.instance;
   final _imagePicker = ImagePicker();
+  final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   final String _cloudName = "dqeptzlsb";
   final String _uploadPreset = "flutter_mediq_upload";
@@ -30,10 +30,47 @@ class _UserDashboardState extends State<UserDashboard> {
   static const String _defaultProfileImageUrl =
       'https://res.cloudinary.com/dqeptzlsb/image/upload/v1782734371/default_il19eg.png';
 
+  // Text controllers (name, email, NIC, mobile, AL Year)
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _nicController = TextEditingController();
   final TextEditingController _mobileController = TextEditingController();
+  final TextEditingController _alYearController = TextEditingController();
+
+  // Stream & Subjects (selection-based)
+  String _selectedStream = '';
+  List<String> _selectedSubjects = [];
+
+  // Subjects per stream (same as signup)
+  final Map<String, List<String>> _subjectsByStream = {
+    'Science': [
+      'Biology / Combined Maths',
+      'Physics',
+      'Chemistry / Agriculture / ICT',
+    ],
+    'Commerce': [
+      'Accounting',
+      'Business Studies',
+      'Economics / ICT',
+    ],
+    'Arts': [
+      'Sinhala / Tamil / English',
+      'Geography',
+      'History',
+      'Political Science',
+      'Economics',
+      'Logic',
+      'Media Studies',
+      'Music / Dancing / Drama / Art',
+      'Languages (French, Japanese, etc.)',
+    ],
+    'Technology': [
+      'Science for Technology (compulsory)',
+      'Engineering Technology',
+      'Bio Systems Technology',
+      'ICT',
+    ],
+  };
 
   bool _loading = true;
   bool _saving = false;
@@ -51,11 +88,12 @@ class _UserDashboardState extends State<UserDashboard> {
   bool _uploadingImage = false;
   bool _hasUnsavedChanges = false;
 
+  // ---------- Lifecycle ----------
   @override
   void initState() {
     super.initState();
     _initializeAuthListener();
-    _loadUserProfile();
+    _loadStudentProfile();
   }
 
   @override
@@ -65,10 +103,11 @@ class _UserDashboardState extends State<UserDashboard> {
     _emailController.dispose();
     _nicController.dispose();
     _mobileController.dispose();
+    _alYearController.dispose();
     super.dispose();
   }
 
-
+  // ---------- Auth & Data Loading ----------
   void _initializeAuthListener() {
     _authStateSubscription = _auth.authStateChanges().listen((user) {
       if (user != null) {
@@ -95,12 +134,11 @@ class _UserDashboardState extends State<UserDashboard> {
       Future.delayed(const Duration(seconds: 4), () {
         if (mounted) setState(() => _showVerificationSuccessPopup = false);
       });
-      _loadUserProfile();
+      _loadStudentProfile();
     }
   }
 
-
-  Future<void> _loadUserProfile() async {
+  Future<void> _loadStudentProfile() async {
     setState(() {
       _loading = true;
       _error = null;
@@ -118,7 +156,7 @@ class _UserDashboardState extends State<UserDashboard> {
 
       final doc = await _firestore.collection('users').doc(user.uid).get();
       if (!doc.exists) {
-        _setError('User profile not found in Firestore.');
+        _setError('Student profile not found in Firestore.');
         return;
       }
 
@@ -146,6 +184,11 @@ class _UserDashboardState extends State<UserDashboard> {
     _emailController.text = (_currentUser?.email ?? data['email'] ?? '') as String;
     _nicController.text = (data['nic'] ?? '') as String;
     _mobileController.text = (data['mobile'] ?? '') as String;
+    _alYearController.text = (data['alYear'] ?? '') as String;
+
+    // Stream & Subjects
+    _selectedStream = (data['stream'] ?? '') as String;
+    _selectedSubjects = List<String>.from(data['subjects'] ?? []);
 
     final imageUrl = (data['profileImageUrl'] ?? '') as String?;
     _profileImageUrl = (imageUrl != null && imageUrl.isNotEmpty)
@@ -171,6 +214,7 @@ class _UserDashboardState extends State<UserDashboard> {
     _emailController.addListener(_onFieldChanged);
     _nicController.addListener(_onFieldChanged);
     _mobileController.addListener(_onFieldChanged);
+    _alYearController.addListener(_onFieldChanged);
   }
 
   void _onFieldChanged() {
@@ -179,7 +223,14 @@ class _UserDashboardState extends State<UserDashboard> {
     }
   }
 
-  Widget _buildDashboardHeader() {
+  // ---------- Header (matches StudentDashboard) ----------
+  Widget _buildHeader() {
+    final String displayName = _fullNameController.text.isNotEmpty
+        ? _fullNameController.text
+        : (_currentUser?.displayName ?? 'Student');
+
+    final String imageUrl = _profileImageUrl ?? _defaultProfileImageUrl;
+
     return Container(
       padding: const EdgeInsets.only(top: 10, left: 20, right: 20, bottom: 20),
       decoration: const BoxDecoration(
@@ -208,8 +259,8 @@ class _UserDashboardState extends State<UserDashboard> {
             crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               IconButton(
-                icon: const Icon(Icons.logout, color: Colors.white, size: 28),
-                onPressed: _handleLogout,
+                icon: const Icon(Icons.menu, color: Colors.white, size: 28),
+                onPressed: () => _scaffoldKey.currentState?.openDrawer(),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
               ),
@@ -218,7 +269,7 @@ class _UserDashboardState extends State<UserDashboard> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   Text(
-                    _displayName,
+                    displayName,
                     style: const TextStyle(
                       fontSize: 18,
                       fontWeight: FontWeight.bold,
@@ -227,7 +278,7 @@ class _UserDashboardState extends State<UserDashboard> {
                   ),
                   const SizedBox(height: 4),
                   const Text(
-                    'Logged in as: User',   // 👈 changed
+                    'Logged in as: Student',
                     style: TextStyle(
                       fontSize: 12,
                       color: Colors.white70,
@@ -236,12 +287,20 @@ class _UserDashboardState extends State<UserDashboard> {
                 ],
               ),
               const Spacer(),
-              _buildDashboardProfileAvatar(),
+              CircleAvatar(
+                radius: 40,
+                backgroundImage: NetworkImage(imageUrl),
+                backgroundColor: Colors.grey.shade200,
+                onBackgroundImageError: (_, __) {},
+                child: _profileImageUrl == null || _profileImageUrl!.isEmpty
+                    ? const Icon(Icons.person, size: 40, color: Colors.white)
+                    : null,
+              ),
             ],
           ),
           const SizedBox(height: 20),
           const Text(
-            'User Profile',     
+            'Student Profile',
             style: TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.w600,
@@ -253,18 +312,31 @@ class _UserDashboardState extends State<UserDashboard> {
     );
   }
 
-  Widget _buildDashboardProfileAvatar() {
-    final imageUrl = _profileImageUrl ?? _defaultProfileImageUrl;
-    return CircleAvatar(
-      radius: 40,
-      backgroundImage: NetworkImage(imageUrl),
-      backgroundColor: Colors.grey.shade200,
-      onBackgroundImageError: (_, __) {
-        if (mounted) setState(() => _profileImageUrl = _defaultProfileImageUrl);
-      },
+  // ---------- Drawer ----------
+  Widget _buildDrawer() {
+    final String userName = _fullNameController.text.isNotEmpty
+        ? _fullNameController.text
+        : 'Student';
+    final String userEmail = _currentUser?.email ?? 'student@example.com';
+    return StudentDrawer(
+      userName: userName,
+      userEmail: userEmail,
+      profileImageUrl: _profileImageUrl,
+      onLogout: () => _logout(context),
     );
   }
 
+  Future<void> _logout(BuildContext context) async {
+    await _auth.signOut();
+    if (context.mounted) {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const LoginPage()),
+      );
+    }
+  }
+
+  // ---------- Image Handling (unchanged) ----------
   void _openImageOptions() {
     if (_isVerificationPending) return;
 
@@ -426,6 +498,7 @@ class _UserDashboardState extends State<UserDashboard> {
     }
   }
 
+  // ---------- Save Profile ----------
   Future<void> _saveProfile() async {
     final user = _auth.currentUser;
     if (user == null) {
@@ -437,6 +510,17 @@ class _UserDashboardState extends State<UserDashboard> {
     final newEmail = _emailController.text.trim();
     final nic = _nicController.text.trim();
     final mobile = _mobileController.text.trim();
+    final alYear = _alYearController.text.trim();
+
+    // Validate stream and subjects
+    if (_selectedStream.isEmpty) {
+      _setError('Please select a stream');
+      return;
+    }
+    if (_selectedSubjects.isEmpty) {
+      _setError('Please select at least one subject');
+      return;
+    }
 
     if (fullName.isEmpty || newEmail.isEmpty) {
       _setError('Full name and email are required.');
@@ -472,6 +556,9 @@ class _UserDashboardState extends State<UserDashboard> {
         'email': newEmail,
         'nic': nic,
         'mobile': mobile,
+        'stream': _selectedStream,
+        'subjects': _selectedSubjects,
+        'alYear': alYear,
         'updatedAt': FieldValue.serverTimestamp(),
         'profileImageUrl': finalProfileImageUrl ?? _defaultProfileImageUrl,
       };
@@ -483,8 +570,6 @@ class _UserDashboardState extends State<UserDashboard> {
       } else {
         if (imageUpdated) {
           _showSnackBar('Profile updated with new photo!');
-        } else if (_pickedImageFile == null && _profileImageUrl == null) {
-          _showSnackBar('Profile updated - default photo set');
         } else {
           _showSnackBar('Profile updated successfully');
         }
@@ -530,6 +615,7 @@ class _UserDashboardState extends State<UserDashboard> {
     }
   }
 
+  // ---------- Popups (unchanged) ----------
   Widget _buildEmailChangePopup() {
     if (!_showEmailChangePopup) return const SizedBox.shrink();
 
@@ -610,6 +696,7 @@ class _UserDashboardState extends State<UserDashboard> {
     );
   }
 
+  // ---- Verification status widget ----
   Widget _buildVerificationStatusWidget(bool isPending) {
     if (!isPending) return const SizedBox.shrink();
 
@@ -670,6 +757,7 @@ class _UserDashboardState extends State<UserDashboard> {
     );
   }
 
+  // ---- UI Widgets ----
   Widget _buildTextField({
     required TextEditingController controller,
     required String label,
@@ -677,6 +765,7 @@ class _UserDashboardState extends State<UserDashboard> {
     required IconData icon,
     TextInputType keyboardType = TextInputType.text,
     bool enabled = true,
+    int maxLines = 1,
   }) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -706,6 +795,7 @@ class _UserDashboardState extends State<UserDashboard> {
             controller: controller,
             keyboardType: keyboardType,
             enabled: enabled,
+            maxLines: maxLines,
             style: TextStyle(
                 color: enabled ? Colors.black : Colors.grey.shade600),
             decoration: InputDecoration(
@@ -745,6 +835,127 @@ class _UserDashboardState extends State<UserDashboard> {
                 borderSide: const BorderSide(color: Colors.red, width: 2),
               ),
             ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ---- Stream Dropdown ----
+  Widget _buildStreamDropdown() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Stream',
+          style: TextStyle(
+            color: AppColors.darkText,
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primaryPurple.withOpacity(0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          child: DropdownButtonFormField<String>(
+            value: _selectedStream.isEmpty ? null : _selectedStream,
+            decoration: InputDecoration(
+              contentPadding: const EdgeInsets.symmetric(vertical: 12.0, horizontal: 20.0),
+              prefixIcon: const Icon(Icons.school_outlined, color: AppColors.primaryPurple),
+              border: InputBorder.none,
+              enabledBorder: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(12),
+                borderSide: BorderSide(color: AppColors.primaryPurple.withOpacity(0.1), width: 1),
+              ),
+              focusedBorder: const OutlineInputBorder(
+                borderRadius: BorderRadius.all(Radius.circular(12)),
+                borderSide: BorderSide(color: AppColors.primaryPurple, width: 2),
+              ),
+            ),
+            items: _subjectsByStream.keys.map((stream) {
+              return DropdownMenuItem<String>(
+                value: stream,
+                child: Text(stream),
+              );
+            }).toList(),
+            onChanged: (value) {
+              setState(() {
+                _selectedStream = value ?? '';
+                _selectedSubjects.clear(); // reset subjects when stream changes
+                _hasUnsavedChanges = true;
+              });
+            },
+            style: const TextStyle(color: AppColors.darkText),
+            dropdownColor: Colors.white,
+            icon: const Icon(Icons.arrow_drop_down, color: AppColors.primaryPurple),
+          ),
+        ),
+      ],
+    );
+  }
+
+  // ---- Subject Checkboxes ----
+  Widget _buildSubjectSelection() {
+    if (_selectedStream.isEmpty) return const SizedBox.shrink();
+    final subjects = _subjectsByStream[_selectedStream] ?? [];
+    if (subjects.isEmpty) return const SizedBox.shrink();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        const Text(
+          'Subjects',
+          style: TextStyle(
+            color: AppColors.darkText,
+            fontSize: 15,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+        const SizedBox(height: 6),
+        Container(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(12),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primaryPurple.withOpacity(0.05),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
+          padding: const EdgeInsets.all(8.0),
+          child: Column(
+            children: subjects.map((subject) {
+              return CheckboxListTile(
+                title: Text(subject),
+                value: _selectedSubjects.contains(subject),
+                onChanged: (bool? checked) {
+                  setState(() {
+                    if (checked == true) {
+                      _selectedSubjects.add(subject);
+                    } else {
+                      _selectedSubjects.remove(subject);
+                    }
+                    _hasUnsavedChanges = true;
+                  });
+                },
+                activeColor: AppColors.primaryPurple,
+                contentPadding: EdgeInsets.zero,
+                dense: true,
+                controlAffinity: ListTileControlAffinity.leading,
+              );
+            }).toList(),
           ),
         ),
       ],
@@ -916,156 +1127,135 @@ class _UserDashboardState extends State<UserDashboard> {
     );
   }
 
-  Future<void> _handleLogout() async {
-    try {
-      await _auth.signOut();
-      if (mounted) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const LoginPage()),
-          (route) => false,
-        );
-      }
-    } catch (e) {
-      if (mounted) _showSnackBar('Logout failed: ${e.toString()}');
-    }
-  }
-
   String _formatCreatedAt() {
     if (_createdAt == null) return '-';
     return DateFormat('yyyy-MM-dd • hh:mm a').format(_createdAt!);
   }
 
+  // ---- Getters ----
   bool get _isVerificationPending =>
       _currentUser?.emailVerified == false && _currentUser != null;
   bool get _hasExistingImage =>
       _profileImageUrl != null && _profileImageUrl!.isNotEmpty ||
       _pickedImageFile != null;
   bool get _disableFieldsAndButton => _isVerificationPending || _saving;
-  String get _displayName => _fullNameController.text.isNotEmpty
-      ? _fullNameController.text
-      : (_currentUser?.displayName ?? 'User');
 
+  // ---- Build ----
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      key: _scaffoldKey,
       backgroundColor: AppColors.lightBackground,
-      body: Stack(
-        children: [
-          SafeArea(
-            child: Column(
+      drawer: _buildDrawer(), // 👈 drawer added
+      body: _loading
+          ? const Center(child: CircularProgressIndicator(color: AppColors.primaryPurple))
+          : Stack(
               children: [
-                _buildDashboardHeader(),
-                Expanded(
-                  child: RefreshIndicator(
-                    onRefresh: _loadUserProfile,
-                    color: AppColors.primaryPurple,
-                    child: _loading
-                        ? const Center(
-                            child: CircularProgressIndicator(
-                                color: AppColors.primaryPurple))
-                        : SingleChildScrollView(
-                            physics: const AlwaysScrollableScrollPhysics(),
-                            padding: const EdgeInsets.all(16.0),
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                const SizedBox(height: 10),
-                                _buildVerificationStatusWidget(
-                                    _isVerificationPending),
-                                const Text(
-                                  'Manage Profile Details',
-                                  style: TextStyle(
-                                      fontSize: 15, fontWeight: FontWeight.w600),
-                                ),
-                                const SizedBox(height: 18),
-                                const Text(
-                                  'Profile Picture',
-                                  style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.w600,
-                                      color: AppColors.primaryPurple),
-                                ),
-                                const SizedBox(height: 8),
-                                _buildImagePreview(),
-                                const SizedBox(height: 18),
-                                _buildTextField(
-                                  controller: _fullNameController,
-                                  label: 'Full Name',
-                                  hint: 'Enter your full name',
-                                  icon: Icons.person_outline,
-                                  enabled: !_isVerificationPending,
-                                ),
-                                const SizedBox(height: 12),
-                                _buildTextField(
-                                  controller: _emailController,
-                                  label: 'Email',
-                                  hint: 'example@email.com',
-                                  icon: Icons.email_outlined,
-                                  keyboardType: TextInputType.emailAddress,
-                                  enabled: !_isVerificationPending,
-                                ),
-                                const SizedBox(height: 12),
-                                _buildTextField(
-                                  controller: _nicController,
-                                  label: 'NIC',
-                                  hint: 'NIC number',
-                                  icon: Icons.badge_outlined,
-                                  enabled: !_isVerificationPending,
-                                ),
-                                const SizedBox(height: 12),
-                                _buildTextField(
-                                  controller: _mobileController,
-                                  label: 'Mobile Number',
-                                  hint: 'Mobile number',
-                                  icon: Icons.phone_outlined,
-                                  keyboardType: TextInputType.phone,
-                                  enabled: !_isVerificationPending,
-                                ),
-                                const SizedBox(height: 24),
-                                Center(
-                                    child: _buildSaveButton(
-                                        _disableFieldsAndButton)),
-                                const SizedBox(height: 18),
+                Column(
+                  children: [
+                    _buildHeader(),
+                    Expanded(
+                      child: RefreshIndicator(
+                        onRefresh: _loadStudentProfile,
+                        color: AppColors.primaryPurple,
+                        child: SingleChildScrollView(
+                          physics: const AlwaysScrollableScrollPhysics(),
+                          padding: const EdgeInsets.all(16.0),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              _buildVerificationStatusWidget(_isVerificationPending),
+                              const Text(
+                                'Manage Profile Details',
+                                style: TextStyle(
+                                    fontSize: 15, fontWeight: FontWeight.w600),
+                              ),
+                              const SizedBox(height: 18),
+                              const Text(
+                                'Profile Picture',
+                                style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.w600,
+                                    color: AppColors.primaryPurple),
+                              ),
+                              const SizedBox(height: 8),
+                              _buildImagePreview(),
+                              const SizedBox(height: 18),
+                              _buildTextField(
+                                controller: _fullNameController,
+                                label: 'Full Name',
+                                hint: 'Enter your full name',
+                                icon: Icons.person_outline,
+                                enabled: !_isVerificationPending,
+                              ),
+                              const SizedBox(height: 12),
+                              _buildTextField(
+                                controller: _emailController,
+                                label: 'Email',
+                                hint: 'example@email.com',
+                                icon: Icons.email_outlined,
+                                keyboardType: TextInputType.emailAddress,
+                                enabled: !_isVerificationPending,
+                              ),
+                              const SizedBox(height: 12),
+                              _buildTextField(
+                                controller: _nicController,
+                                label: 'NIC',
+                                hint: 'NIC number',
+                                icon: Icons.badge_outlined,
+                                enabled: !_isVerificationPending,
+                              ),
+                              const SizedBox(height: 12),
+                              _buildTextField(
+                                controller: _mobileController,
+                                label: 'Mobile Number',
+                                hint: 'Mobile number',
+                                icon: Icons.phone_outlined,
+                                keyboardType: TextInputType.phone,
+                                enabled: !_isVerificationPending,
+                              ),
+                              const SizedBox(height: 12),
+                              _buildStreamDropdown(),
+                              const SizedBox(height: 12),
+                              _buildSubjectSelection(),
+                              const SizedBox(height: 12),
+                              _buildTextField(
+                                controller: _alYearController,
+                                label: 'A/L Year',
+                                hint: 'e.g. 2025',
+                                icon: Icons.calendar_today_outlined,
+                                enabled: !_isVerificationPending,
+                              ),
+                              const SizedBox(height: 24),
+                              Center(
+                                  child: _buildSaveButton(_disableFieldsAndButton)),
+                              const SizedBox(height: 18),
+                              if (_error != null)
                                 Padding(
-                                  padding: const EdgeInsets.only(left: 6.0),
-                                ),
-                                const SizedBox(height: 30),
-                                if (_error != null)
-                                  Padding(
-                                    padding: const EdgeInsets.only(bottom: 8.0),
-                                    child: Text(
-                                      'Error: $_error',
-                                      style: const TextStyle(
-                                          color: Colors.red,
-                                          fontWeight: FontWeight.bold),
-                                    ),
+                                  padding: const EdgeInsets.only(bottom: 8.0),
+                                  child: Text(
+                                    'Error: $_error',
+                                    style: const TextStyle(
+                                        color: Colors.red,
+                                        fontWeight: FontWeight.bold),
                                   ),
-                                const SizedBox(height: 50),
-                              ],
-                            ),
+                                ),
+                              const SizedBox(height: 30),
+                              const Text(
+                                'Developed By Devlk',
+                                style: TextStyle(fontSize: 12, color: Colors.black54),
+                              ),
+                            ],
                           ),
-                  ),
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
+                if (_showEmailChangePopup) _buildEmailChangePopup(),
+                if (_showVerificationSuccessPopup) _buildVerificationSuccessPopup(),
               ],
             ),
-          ),
-          Align(
-            alignment: Alignment.bottomCenter,
-            child: Container(
-              width: double.infinity,
-              color: Colors.white,
-              padding: const EdgeInsets.all(8.0),
-              child: const Text(
-                'Developed By Devlk',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 12, color: Colors.black54),
-              ),
-            ),
-          ),
-          if (_showEmailChangePopup) _buildEmailChangePopup(),
-          if (_showVerificationSuccessPopup) _buildVerificationSuccessPopup(),
-        ],
-      ),
     );
   }
 }
