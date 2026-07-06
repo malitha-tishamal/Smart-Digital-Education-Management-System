@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/app_colors.dart';
 import '../screens/admin/admin_dashboard.dart';
-import '../screens/user_dashboard.dart';
+import '../../screens/student/user_dashboard.dart';
 import '../screens/teacher_dashboard.dart';
 
 class DashboardWrapper extends StatefulWidget {
