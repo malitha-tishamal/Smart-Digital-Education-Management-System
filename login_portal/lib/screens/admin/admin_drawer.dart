@@ -4,6 +4,7 @@ import 'admin_profile.dart';
 import 'admin_dashboard.dart';
 import 'accounts_management_screen.dart';
 import 'class_management_screen.dart';
+import 'admin_all_meeting.dart';
 
 class AdminDrawer extends StatefulWidget {
   final String userName;
@@ -143,7 +144,7 @@ class _AdminDrawerState extends State<AdminDrawer> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16),
                     child: Image.asset(
-                      'assets/images/logo-2.png',
+                      'assets/logo/logo-2.png',
                       fit: BoxFit.contain,
                       errorBuilder: (context, error, stackTrace) {
                         // Fallback if image not found
@@ -288,8 +289,8 @@ class _AdminDrawerState extends State<AdminDrawer> {
                
               _buildDrawerItem(
                   icon: Icons.class_rounded,
-                  label: "Manage Classes",
-                  description: "Manage all classes",
+                  label: "Manage Payments ",
+                  description: "Manage Payments and Students",
                   onTap: () {
                     Navigator.of(context).pop();
                     Navigator.of(context).push(
@@ -301,18 +302,18 @@ class _AdminDrawerState extends State<AdminDrawer> {
                 ),
 
                 _buildDrawerItem(
-                  icon: Icons.class_rounded,
-                  label: "Manage Classes",
-                  description: "Manage all classes",
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => const ClassManagementScreen(),
-                      ),
-                    );
-                  },
-                ), 
+                    icon: Icons.video_call_rounded,
+                    label: "Manage Classes",
+                    description: "Manage Class All Acceses",
+                    onTap: () {
+                      Navigator.of(context).pop();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) => const AdminAllMeetingsScreen(),
+                        ),
+                      );
+                    },
+                  ), 
                 
                 _buildDrawerItem(
                   icon: Icons.person_rounded,
