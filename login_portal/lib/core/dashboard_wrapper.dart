@@ -4,7 +4,7 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import '../core/app_colors.dart';
 import '../screens/admin/admin_dashboard.dart';
 import '../../screens/student/user_dashboard.dart';
-import '../screens/teacher_dashboard.dart';
+import '../screens/teacher/teacher_dashboard.dart';
 
 class DashboardWrapper extends StatefulWidget {
   const DashboardWrapper({super.key});
