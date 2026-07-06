@@ -120,6 +120,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                                  studentStream == _teacherStream;
         
         if (hasMatchingSubject || hasMatchingStream) {
+          // FIXED: Use 'alYear' instead of 'academicYear' to match your Firestore field
           final enrollmentData = {
             'id': doc.id,
             'studentId': studentId,
@@ -129,7 +130,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
             'studentCustomId': studentData['studentId'] ?? '',
             'studentStream': studentStream,
             'studentSubjects': studentSubjects,
-            'academicYear': studentData['academicYear'] ?? '2024',
+            'academicYear': studentData['alYear'] ?? 'N/A',  // Changed from 'academicYear' to 'alYear'
             'lastLoginAt': (studentData['lastLoginAt'] as Timestamp?)?.toDate(),
             'status': data['status'] ?? 'pending',
             'paymentStatus': data['paymentStatus'] ?? 'unpaid',
@@ -163,15 +164,13 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         e['paymentMonth'] == _currentMonth
       ).length;
       
-      // Calculate total payment amount (assuming each payment is a fixed amount)
-      // You can adjust this value based on your actual payment structure
-      final double paymentAmount = 2500.0; // Default payment amount per student
+      final double paymentAmount = 2500.0;
       _currentMonthPaymentTotal = _currentMonthPaidStudents * paymentAmount;
 
       // Group students by academic year
       _studentsByYear = {};
       for (var student in enrichedEnrollments) {
-        final year = student['academicYear'] ?? '2024';
+        final year = student['academicYear'] ?? 'N/A';
         if (!_studentsByYear.containsKey(year)) {
           _studentsByYear[year] = [];
         }
@@ -400,10 +399,10 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
     );
   }
 
-  // ---- Current Month Payment Box ----
+  // ---- Compact Current Month Payment Box ----
   Widget _buildCurrentMonthPaymentBox() {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       decoration: BoxDecoration(
         gradient: LinearGradient(
           colors: [
@@ -416,206 +415,99 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
         borderRadius: BorderRadius.circular(16),
         border: Border.all(
           color: const Color(0xFF059669).withOpacity(0.3),
-          width: 2,
+          width: 1.5,
         ),
-        boxShadow: [
-          BoxShadow(
-            color: const Color(0xFF059669).withOpacity(0.1),
-            blurRadius: 12,
-            offset: const Offset(0, 4),
-          ),
-        ],
       ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
+      child: Row(
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF059669).withOpacity(0.15),
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: const Icon(
-                  Icons.payment_rounded,
-                  color: Color(0xFF059669),
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    'This Month Payments',
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.darkText,
-                    ),
-                  ),
-                  Text(
-                    _currentMonth,
-                    style: TextStyle(
-                      fontSize: 12,
-                      color: Colors.grey.shade500,
-                    ),
-                  ),
-                ],
-              ),
-              const Spacer(),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF059669).withOpacity(0.1),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Text(
-                  'Total: LKR ${_currentMonthPaymentTotal.toStringAsFixed(0)}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF059669),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 16),
-          Row(
-            children: [
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF059669).withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: const Color(0xFF059669).withOpacity(0.1),
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        _currentMonthPaidStudents.toString(),
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF059669),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.payment,
-                            size: 14,
-                            color: const Color(0xFF059669),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Paid',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFDC2626).withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: const Color(0xFFDC2626).withOpacity(0.1),
-                    ),
-                  ),
-                  child: Column(
-                    children: [
-                      Text(
-                        _currentMonthPendingPayment.toString(),
-                        style: TextStyle(
-                          fontSize: 24,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFFDC2626),
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(
-                            Icons.payment_outlined,
-                            size: 14,
-                            color: const Color(0xFFDC2626),
-                          ),
-                          const SizedBox(width: 4),
-                          Text(
-                            'Pending',
-                            style: TextStyle(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
           Container(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
-              color: const Color(0xFF2563EB).withOpacity(0.05),
-              borderRadius: BorderRadius.circular(12),
-              border: Border.all(
-                color: const Color(0xFF2563EB).withOpacity(0.1),
-              ),
+              color: const Color(0xFF059669).withOpacity(0.15),
+              borderRadius: BorderRadius.circular(10),
             ),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: const Icon(Icons.payment_rounded, color: Color(0xFF059669), size: 20),
+          ),
+          const SizedBox(width: 12),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Total Students for This Month',
+                  'This Month Payments',
                   style: TextStyle(
-                    fontSize: 13,
-                    color: Colors.grey.shade600,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.darkText,
                   ),
                 ),
+                const SizedBox(height: 2),
                 Text(
-                  (_currentMonthPaidStudents + _currentMonthPendingPayment).toString(),
+                  'Total: LKR ${_currentMonthPaymentTotal.toStringAsFixed(0)}',
                   style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF2563EB),
+                    fontSize: 11,
+                    color: Colors.grey.shade600,
                   ),
                 ),
               ],
             ),
+          ),
+          _buildCompactStat(
+            label: 'Paid',
+            count: _currentMonthPaidStudents,
+            color: const Color(0xFF059669),
+          ),
+          const SizedBox(width: 8),
+          _buildCompactStat(
+            label: 'Pending',
+            count: _currentMonthPendingPayment,
+            color: const Color(0xFFDC2626),
           ),
         ],
       ),
     );
   }
 
-  // ---- Academic Year Category Box ----
+  Widget _buildCompactStat({
+    required String label,
+    required int count,
+    required Color color,
+  }) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+      decoration: BoxDecoration(
+        color: color.withOpacity(0.08),
+        borderRadius: BorderRadius.circular(8),
+      ),
+      child: Column(
+        children: [
+          Text(
+            count.toString(),
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
+          ),
+          Text(
+            label,
+            style: TextStyle(fontSize: 10, color: Colors.grey.shade600),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // ---- Academic Year Category Box (UPDATED with alYear support) ----
   Widget _buildAcademicYearBox(String year, List<Map<String, dynamic>> students) {
     final activeCount = students.where((s) => s['status'] == 'active').length;
     final pendingCount = students.where((s) => s['status'] == 'pending').length;
     final paidCount = students.where((s) => s['paymentStatus'] == 'paid').length;
     final unpaidCount = students.where((s) => s['paymentStatus'] != 'paid').length;
+
+    // Display only first 3 students by default
+    final displayedStudents = students.take(3).toList();
+    final hasMore = students.length > 3;
 
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
@@ -659,11 +551,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
               children: [
                 Row(
                   children: [
-                    Icon(
-                      Icons.calendar_today,
-                      color: AppColors.primaryPurple,
-                      size: 20,
-                    ),
+                    const Icon(Icons.calendar_today, color: AppColors.primaryPurple, size: 20),
                     const SizedBox(width: 10),
                     Text(
                       'Academic Year $year',
@@ -694,53 +582,133 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
             ),
           ),
           
-          // Stats Row
+          // Stats Row (Counters)
           Padding(
             padding: const EdgeInsets.all(12),
             child: Row(
               children: [
-                _buildMiniStat(
-                  label: 'Active',
-                  count: activeCount,
-                  color: const Color(0xFF059669),
-                  icon: Icons.check_circle,
-                ),
+                _buildMiniStat(label: 'Active', count: activeCount, color: const Color(0xFF059669), icon: Icons.check_circle),
                 const SizedBox(width: 12),
-                _buildMiniStat(
-                  label: 'Pending',
-                  count: pendingCount,
-                  color: const Color(0xFFF59E0B),
-                  icon: Icons.pending,
-                ),
+                _buildMiniStat(label: 'Pending', count: pendingCount, color: const Color(0xFFF59E0B), icon: Icons.pending),
                 const SizedBox(width: 12),
-                _buildMiniStat(
-                  label: 'Paid',
-                  count: paidCount,
-                  color: const Color(0xFF2563EB),
-                  icon: Icons.payment,
-                ),
+                _buildMiniStat(label: 'Paid', count: paidCount, color: const Color(0xFF2563EB), icon: Icons.payment),
                 const SizedBox(width: 12),
-                _buildMiniStat(
-                  label: 'Unpaid',
-                  count: unpaidCount,
-                  color: const Color(0xFFDC2626),
-                  icon: Icons.payment_outlined,
-                ),
+                _buildMiniStat(label: 'Unpaid', count: unpaidCount, color: const Color(0xFFDC2626), icon: Icons.payment_outlined),
               ],
             ),
           ),
           
-          // Student List
+          // Student List (First 3 only)
           Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+            padding: const EdgeInsets.symmetric(horizontal: 12),
             child: Column(
-              children: students.map((student) {
+              children: displayedStudents.map((student) {
                 return _buildStudentTile(student);
               }).toList(),
             ),
           ),
+          
+          // See All Button (only if more than 3 students)
+          if (hasMore)
+            Padding(
+              padding: const EdgeInsets.all(12.0),
+              child: Center(
+                child: TextButton.icon(
+                  onPressed: () => _showAllStudentsModal(year, students),
+                  icon: const Icon(Icons.visibility, size: 18),
+                  label: Text('See All ${students.length} Students'),
+                  style: TextButton.styleFrom(
+                    foregroundColor: AppColors.primaryPurple,
+                    backgroundColor: AppColors.primaryPurple.withOpacity(0.05),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          const SizedBox(height: 8),
         ],
       ),
+    );
+  }
+
+  // Modal to show all students for a year
+  void _showAllStudentsModal(String year, List<Map<String, dynamic>> students) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return DraggableScrollableSheet(
+          initialChildSize: 0.9,
+          minChildSize: 0.5,
+          maxChildSize: 0.95,
+          expand: false,
+          builder: (context, scrollController) {
+            return Column(
+              children: [
+                // Modal Header
+                Container(
+                  padding: const EdgeInsets.all(16),
+                  decoration: BoxDecoration(
+                    border: Border(bottom: BorderSide(color: Colors.grey.shade200)),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.calendar_today, color: AppColors.primaryPurple),
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          'Academic Year $year - All Students',
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: AppColors.primaryPurple.withOpacity(0.1),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Text(
+                          '${students.length} Students',
+                          style: TextStyle(
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                            color: AppColors.primaryPurple,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.close),
+                      ),
+                    ],
+                  ),
+                ),
+                // Student List
+                Expanded(
+                  child: ListView.builder(
+                    controller: scrollController,
+                    padding: const EdgeInsets.all(12),
+                    itemCount: students.length,
+                    itemBuilder: (context, index) {
+                      return _buildStudentTile(students[index]);
+                    },
+                  ),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 
@@ -775,10 +743,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                 const SizedBox(width: 2),
                 Text(
                   label,
-                  style: TextStyle(
-                    fontSize: 9,
-                    color: Colors.grey.shade600,
-                  ),
+                  style: TextStyle(fontSize: 9, color: Colors.grey.shade600),
                 ),
               ],
             ),
@@ -872,10 +837,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                 ),
                 Text(
                   student['studentEmail'],
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Colors.grey.shade600,
-                  ),
+                  style: TextStyle(fontSize: 11, color: Colors.grey.shade600),
                   overflow: TextOverflow.ellipsis,
                 ),
                 const SizedBox(height: 2),
@@ -891,9 +853,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Icon(
-                            student['paymentStatus'] == 'paid' 
-                                ? Icons.payment 
-                                : Icons.payment_outlined,
+                            student['paymentStatus'] == 'paid' ? Icons.payment : Icons.payment_outlined,
                             size: 10,
                             color: paymentColor,
                           ),
@@ -914,13 +874,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                       children: [
                         Icon(Icons.access_time, size: 10, color: Colors.grey.shade500),
                         const SizedBox(width: 2),
-                        Text(
-                          lastLoginText,
-                          style: TextStyle(
-                            fontSize: 10,
-                            color: Colors.grey.shade500,
-                          ),
-                        ),
+                        Text(lastLoginText, style: TextStyle(fontSize: 10, color: Colors.grey.shade500)),
                       ],
                     ),
                     if (student['studentCustomId'].toString().isNotEmpty) ...[
@@ -1036,9 +990,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             Icon(
-                              student['paymentStatus'] == 'paid' 
-                                  ? Icons.payment 
-                                  : Icons.payment_outlined,
+                              student['paymentStatus'] == 'paid' ? Icons.payment : Icons.payment_outlined,
                               size: 12,
                               color: paymentColor,
                             ),
@@ -1059,10 +1011,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                   const SizedBox(height: 2),
                   Text(
                     student['studentEmail'],
-                    style: TextStyle(
-                      fontSize: 13,
-                      color: Colors.grey.shade600,
-                    ),
+                    style: TextStyle(fontSize: 13, color: Colors.grey.shade600),
                   ),
                   const SizedBox(height: 4),
                   Row(
@@ -1071,13 +1020,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                         children: [
                           Icon(Icons.access_time, size: 12, color: Colors.grey.shade500),
                           const SizedBox(width: 4),
-                          Text(
-                            lastLoginText,
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.grey.shade500,
-                            ),
-                          ),
+                          Text(lastLoginText, style: TextStyle(fontSize: 11, color: Colors.grey.shade500)),
                         ],
                       ),
                       const SizedBox(width: 10),
@@ -1102,18 +1045,14 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                           Icon(Icons.calendar_today, size: 12, color: Colors.grey.shade500),
                           const SizedBox(width: 4),
                           Text(
-                            student['academicYear'] ?? '2024',
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: Colors.grey.shade500,
-                            ),
+                            student['academicYear'] ?? 'N/A',
+                            style: TextStyle(fontSize: 11, color: Colors.grey.shade500),
                           ),
                         ],
                       ),
                     ],
                   ),
-                  if (student['studentSubjects'] != null && 
-                      (student['studentSubjects'] as List).isNotEmpty)
+                  if (student['studentSubjects'] != null && (student['studentSubjects'] as List).isNotEmpty)
                     Padding(
                       padding: const EdgeInsets.only(top: 4),
                       child: Wrap(
@@ -1226,9 +1165,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                       const SizedBox(width: 6),
                       Expanded(
                         child: Text(
-                          _teacherSubjects.isNotEmpty 
-                              ? _teacherSubjects.join(', ')
-                              : 'No subjects assigned',
+                          _teacherSubjects.isNotEmpty ? _teacherSubjects.join(', ') : 'No subjects assigned',
                           style: TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.w500,
@@ -1269,7 +1206,6 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          // Teacher Info Header
                           _buildTeacherInfoHeader(),
                           const SizedBox(height: 16),
                           
@@ -1342,7 +1278,7 @@ class _TeacherDashboardState extends State<TeacherDashboard> {
                           ),
                           const SizedBox(height: 16),
                           
-                          // Current Month Payment Box (NEW)
+                          // Compact Current Month Payment Box
                           _buildCurrentMonthPaymentBox(),
                           const SizedBox(height: 24),
                           
