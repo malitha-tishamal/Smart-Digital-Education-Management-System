@@ -14,10 +14,6 @@
 
 🚀📚 **Project Showcase: Eduwide – Educational Management System**
 
-I’m excited to share my latest Flutter project, **Eduwide**, a modern cross-platform **Educational Management System and Login Portal** developed as part of my **HNDIT 4232 – Mobile Application Development Assignment** at **Sri Lanka Advanced Technological Institute (SLIATE), Galle**.
-
-🎓 **About Eduwide**
-
 Eduwide is a cross-platform application developed using **Flutter**, designed to connect **Administrators, Teachers, and Students** through a single centralized digital platform.
 
 The main goal of the system is to simplify and digitize educational management processes, including user management, online learning, student enrollment, class management, educational resource sharing, and payment tracking.
