@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
-import '../core/app_colors.dart';
-import '../screens/admin/admin_dashboard.dart';
-import '../../screens/student/user_dashboard.dart';
-import '../screens/teacher/teacher_dashboard.dart';
+import '../../core/app_colors.dart';
+import '../../controllers/auth_controller.dart';
+import '../admin/admin_dashboard.dart';
+import '../teacher/teacher_dashboard.dart';
+import '../student/user_dashboard.dart';
 
 class DashboardWrapper extends StatefulWidget {
   const DashboardWrapper({super.key});
@@ -14,8 +13,7 @@ class DashboardWrapper extends StatefulWidget {
 }
 
 class _DashboardWrapperState extends State<DashboardWrapper> {
-  final FirebaseAuth _auth = FirebaseAuth.instance;
-  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
+  final AuthController _authController = AuthController();
 
   bool _isLoading = true;
   String _role = 'user';
@@ -33,40 +31,36 @@ class _DashboardWrapperState extends State<DashboardWrapper> {
       _error = null;
     });
 
-    final user = _auth.currentUser;
+    final user = _authController.currentUser;
     if (user == null) {
-      print('❌ No user signed in');
       if (mounted) {
         Navigator.pushReplacementNamed(context, '/login');
       }
       return;
     }
 
-    print(' User UID: ${user.uid}'); // මෙය console එකේ බලන්න
-
     try {
-      final doc = await _firestore.collection('users').doc(user.uid).get();
-      if (doc.exists) {
-        final data = doc.data() as Map<String, dynamic>;
-        final fetchedRole = data['role'] ?? 'user';
-        print(' Fetched role: $fetchedRole'); 
-        setState(() {
-          _role = fetchedRole;
-          _isLoading = false;
-        });
+      final role = await _authController.getCurrentUserRole();
+      if (role != null) {
+        if (mounted) {
+          setState(() {
+            _role = role;
+            _isLoading = false;
+          });
+        }
       } else {
-        print(' User document does not exist');
-        await _auth.signOut();
+        await _authController.signOut();
         if (mounted) {
           Navigator.pushReplacementNamed(context, '/login');
         }
       }
     } catch (e) {
-      print(' Error fetching role: $e');
-      setState(() {
-        _error = 'Failed to load user role. Please try again.';
-        _isLoading = false;
-      });
+      if (mounted) {
+        setState(() {
+          _error = 'Failed to load user role. Please try again.';
+          _isLoading = false;
+        });
+      }
     }
   }
 
@@ -109,7 +103,6 @@ class _DashboardWrapperState extends State<DashboardWrapper> {
     }
 
     // Role-based routing
-    print('Routing to role: $_role');
     if (_role == 'admin') {
       return const AdminDashboard();
     } else if (_role == 'teacher') {

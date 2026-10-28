@@ -2,10 +2,11 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart'; // added for Firestore
-import '../core/app_colors.dart';
-import '../auth_service.dart';
-import '../models/user_model.dart' as user;
-import '../core/dashboard_wrapper.dart';
+import '../../core/app_colors.dart';
+import '../../controllers/auth_controller.dart';
+import '../../models/user_model.dart';
+
+
 import 'login_screen.dart';
 
 class SignUpPage extends StatefulWidget {
@@ -16,7 +17,7 @@ class SignUpPage extends StatefulWidget {
 }
 
 class _SignUpPageState extends State<SignUpPage> {
-  final AuthService _auth = AuthService();
+  final AuthController _authController = AuthController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   // Controllers
@@ -92,12 +93,13 @@ class _SignUpPageState extends State<SignUpPage> {
 
   void _updatePasswordStrength() {
     final pwd = _passwordController.text;
+    final strength = _authController.calculatePasswordStrength(pwd);
     setState(() {
-      _hasMinLength = pwd.length >= 8;
-      _hasUppercase = pwd.contains(RegExp(r'[A-Z]'));
-      _hasLowercase = pwd.contains(RegExp(r'[a-z]'));
-      _hasDigit = pwd.contains(RegExp(r'[0-9]'));
-      _hasSpecial = pwd.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
+      _hasMinLength = strength.hasMinLength;
+      _hasUppercase = strength.hasUppercase;
+      _hasLowercase = strength.hasLowercase;
+      _hasDigit = strength.hasDigit;
+      _hasSpecial = strength.hasSpecial;
     });
   }
 
@@ -166,38 +168,15 @@ class _SignUpPageState extends State<SignUpPage> {
     }
 
     setState(() => _isGeneratingId = true);
-
-    try {
-      final counterRef = FirebaseFirestore.instance.collection('counters').doc('studentIdCounter');
-
-      // Get the next number using a transaction
-      final int newNumber = await FirebaseFirestore.instance.runTransaction<int>(
-        (transaction) async {
-          final counterDoc = await transaction.get(counterRef);
-          int currentCount = 0;
-          if (counterDoc.exists) {
-            currentCount = counterDoc.data()?['count'] ?? 0;
-          }
-          final newCount = currentCount + 1;
-          transaction.set(counterRef, {'count': newCount}, SetOptions(merge: true));
-          return newCount;
-        },
-      );
-
-      final formattedNumber = newNumber.toString().padLeft(4, '0');
-      final cleanedStream = stream.replaceAll(' ', '');
-      final studentId = 'EduLK/$cleanedStream/$formattedNumber';
-
+    final studentId = await _authController.generateStudentId(
+      stream: stream,
+      role: _selectedRole,
+    );
+    if (mounted) {
       setState(() {
         _generatedStudentId = studentId;
         _isGeneratingId = false;
       });
-    } catch (e) {
-      setState(() {
-        _generatedStudentId = '';
-        _isGeneratingId = false;
-      });
-      // Optionally show error
     }
   }
 
@@ -251,7 +230,7 @@ class _SignUpPageState extends State<SignUpPage> {
     final studentId = (_selectedRole == 'user') ? _generatedStudentId : '';
 
     try {
-      final user.AppUser? appUser = await _auth.signUpWithEmailPassword(
+      final AppUser? appUser = await _authController.signUp(
         email: email,
         password: password,
         name: name,
@@ -261,7 +240,7 @@ class _SignUpPageState extends State<SignUpPage> {
         stream: stream,
         subjects: subjects,
         alYear: alYear,
-        studentId: studentId, 
+        studentId: studentId,
       );
 
       if (appUser != null && mounted) {
@@ -273,7 +252,7 @@ class _SignUpPageState extends State<SignUpPage> {
           ),
         );
 
-        await _auth.signOut();
+        await _authController.signOut();
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(builder: (_) => const LoginPage()),
@@ -506,7 +485,7 @@ class _SignUpPageState extends State<SignUpPage> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
-            boxShadow: [BoxShadow(color: AppColors.primaryPurple.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 4))],
+            boxShadow: [BoxShadow(color: AppColors.primaryPurple.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 4))],
           ),
           child: TextFormField(
             controller: controller,
@@ -514,13 +493,13 @@ class _SignUpPageState extends State<SignUpPage> {
             validator: validator,
             decoration: InputDecoration(
               hintText: hint,
-              hintStyle: TextStyle(color: AppColors.inputBorder.withOpacity(0.8), fontSize: 14),
+              hintStyle: TextStyle(color: AppColors.inputBorder.withValues(alpha: 0.8), fontSize: 14),
               contentPadding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
               prefixIcon: Icon(icon, color: AppColors.primaryPurple),
               border: InputBorder.none,
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.primaryPurple.withOpacity(0.1), width: 1),
+                borderSide: BorderSide(color: AppColors.primaryPurple.withValues(alpha: 0.1), width: 1),
               ),
               focusedBorder: const OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(12)),
@@ -557,7 +536,7 @@ class _SignUpPageState extends State<SignUpPage> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
-            boxShadow: [BoxShadow(color: AppColors.primaryPurple.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 4))],
+            boxShadow: [BoxShadow(color: AppColors.primaryPurple.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 4))],
           ),
           child: TextFormField(
             controller: controller,
@@ -565,7 +544,7 @@ class _SignUpPageState extends State<SignUpPage> {
             validator: validator,
             decoration: InputDecoration(
               hintText: '*********',
-              hintStyle: TextStyle(color: AppColors.inputBorder.withOpacity(0.8), fontSize: 14),
+              hintStyle: TextStyle(color: AppColors.inputBorder.withValues(alpha: 0.8), fontSize: 14),
               contentPadding: const EdgeInsets.symmetric(vertical: 16.0, horizontal: 20.0),
               prefixIcon: const Icon(Icons.lock_outline_rounded, color: AppColors.primaryPurple),
               suffixIcon: IconButton(
@@ -579,7 +558,7 @@ class _SignUpPageState extends State<SignUpPage> {
               border: InputBorder.none,
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.primaryPurple.withOpacity(0.1), width: 1),
+                borderSide: BorderSide(color: AppColors.primaryPurple.withValues(alpha: 0.1), width: 1),
               ),
               focusedBorder: const OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(12)),
@@ -618,7 +597,7 @@ class _SignUpPageState extends State<SignUpPage> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
-            boxShadow: [BoxShadow(color: AppColors.primaryPurple.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 4))],
+            boxShadow: [BoxShadow(color: AppColors.primaryPurple.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 4))],
           ),
           child: TextFormField(
             controller: TextEditingController(text: _generatedStudentId),
@@ -634,7 +613,7 @@ class _SignUpPageState extends State<SignUpPage> {
               border: InputBorder.none,
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.primaryPurple.withOpacity(0.2), width: 1),
+                borderSide: BorderSide(color: AppColors.primaryPurple.withValues(alpha: 0.2), width: 1),
               ),
               focusedBorder: const OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(12)),
@@ -751,7 +730,7 @@ class _SignUpPageState extends State<SignUpPage> {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(12),
-            boxShadow: [BoxShadow(color: AppColors.primaryPurple.withOpacity(0.05), blurRadius: 8, offset: const Offset(0, 4))],
+            boxShadow: [BoxShadow(color: AppColors.primaryPurple.withValues(alpha: 0.05), blurRadius: 8, offset: const Offset(0, 4))],
           ),
           child: DropdownButtonFormField<String>(
             value: value,
@@ -761,7 +740,7 @@ class _SignUpPageState extends State<SignUpPage> {
               border: InputBorder.none,
               enabledBorder: OutlineInputBorder(
                 borderRadius: BorderRadius.circular(12),
-                borderSide: BorderSide(color: AppColors.primaryPurple.withOpacity(0.1), width: 1),
+                borderSide: BorderSide(color: AppColors.primaryPurple.withValues(alpha: 0.1), width: 1),
               ),
               focusedBorder: const OutlineInputBorder(
                 borderRadius: BorderRadius.all(Radius.circular(12)),
@@ -860,7 +839,7 @@ class _SignUpPageState extends State<SignUpPage> {
                 ),
           boxShadow: isDisabled
               ? []
-              : [BoxShadow(color: AppColors.buttonGradientEnd.withOpacity(0.4), blurRadius: 10, offset: const Offset(0, 5))],
+              : [BoxShadow(color: AppColors.buttonGradientEnd.withValues(alpha: 0.4), blurRadius: 10, offset: const Offset(0, 5))],
         ),
         child: Material(
           color: Colors.transparent,

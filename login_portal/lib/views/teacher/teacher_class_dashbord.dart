@@ -3,7 +3,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:intl/intl.dart';
 import '../../core/app_colors.dart';
-import '../../auth/login_screen.dart';
+import '../auth/login_screen.dart';
 import 'teacher_drawer.dart';
 
 class ZoomMeetingDashboard extends StatefulWidget {

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../../core/app_colors.dart';
-import '../../auth/login_screen.dart';
+import '../auth/login_screen.dart';
 import 'teacher_drawer.dart';
 
 class TeacherDashboard extends StatefulWidget {

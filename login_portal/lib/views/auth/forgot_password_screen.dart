@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:firebase_auth/firebase_auth.dart';
-import '../core/app_colors.dart';
+import '../../core/app_colors.dart';
+import '../../controllers/auth_controller.dart';
 
 class ForgotPasswordPage extends StatefulWidget {
   const ForgotPasswordPage({super.key});
@@ -11,9 +11,15 @@ class ForgotPasswordPage extends StatefulWidget {
 
 class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
   final TextEditingController _emailController = TextEditingController();
-  final FirebaseAuth _auth = FirebaseAuth.instance;
+  final AuthController _authController = AuthController();
   bool _isLoading = false;
   String? _message;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
 
   Future<void> _resetPassword() async {
     final email = _emailController.text.trim();
@@ -26,12 +32,12 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
       _message = null;
     });
     try {
-      await _auth.sendPasswordResetEmail(email: email);
+      await _authController.sendPasswordResetEmail(email);
       setState(() => _message = 'Password reset link sent to $email');
     } catch (e) {
       setState(() => _message = 'Failed to send reset email. Try again.');
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -61,7 +67,6 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            
             Hero(
               tag: 'app-logo',
               child: Image.asset(
@@ -85,7 +90,7 @@ class _ForgotPasswordPageState extends State<ForgotPasswordPage> {
                 prefixIcon: const Icon(Icons.email_outlined, color: AppColors.primaryPurple),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide(color: AppColors.primaryPurple.withOpacity(0.2)),
+                  borderSide: BorderSide(color: AppColors.primaryPurple.withValues(alpha: 0.2)),
                 ),
                 focusedBorder: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),

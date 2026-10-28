@@ -8,7 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:image_picker/image_picker.dart';
 import '../../core/app_colors.dart';
-import '../../auth/login_screen.dart';
+import '../auth/login_screen.dart';
 import 'admin_drawer.dart';
 
 class AdminProfileScreen extends StatefulWidget {

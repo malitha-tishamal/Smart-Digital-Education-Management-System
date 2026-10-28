@@ -7,15 +7,17 @@ import 'package:timezone/timezone.dart' as tz;
 // Core
 import 'core/firebase_options.dart';
 import 'core/app_colors.dart';
-import 'core/dashboard_wrapper.dart';
 
-// Auth screens
-import 'auth/firebase_load_check_screen.dart';
-import 'auth/simple_preload_screen.dart';
-import 'auth/start_page.dart';
-import 'auth/login_screen.dart';
-import 'auth/signup_screen.dart';
-import 'auth/forgot_password_screen.dart';
+// Views - Auth
+import 'views/auth/firebase_load_check_screen.dart';
+import 'views/auth/simple_preload_screen.dart';
+import 'views/auth/start_page.dart';
+import 'views/auth/login_screen.dart';
+import 'views/auth/signup_screen.dart';
+import 'views/auth/forgot_password_screen.dart';
+
+// Views - Dashboard
+import 'views/dashboard/dashboard_wrapper.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

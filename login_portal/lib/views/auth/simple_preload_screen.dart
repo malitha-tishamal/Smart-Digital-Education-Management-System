@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../core/dashboard_wrapper.dart';
+import '../dashboard/dashboard_wrapper.dart';
 
 class SimplePreloadScreen extends StatelessWidget {
   const SimplePreloadScreen({super.key});

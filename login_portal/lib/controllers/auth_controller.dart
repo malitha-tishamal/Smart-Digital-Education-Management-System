@@ -394,7 +394,7 @@ class AuthController {
           .doc(user.uid)
           .get();
       if (doc.exists) {
-        return (doc.data() as Map<String, dynamic>?)?['role'] as String? ?? 'user';
+        return doc.data()?['role'] as String? ?? 'user';
       }
     } catch (e) {
       debugPrint('Error fetching user role: $e');

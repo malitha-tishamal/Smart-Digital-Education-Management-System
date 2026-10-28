@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../core/app_colors.dart';
+import '../../core/app_colors.dart';
 import 'login_screen.dart';
 import 'signup_screen.dart';
 
@@ -91,7 +91,7 @@ class StartPage extends StatelessWidget {
         ),
         boxShadow: [
           BoxShadow(
-            color: AppColors.buttonGradientEnd.withOpacity(0.4),
+            color: AppColors.buttonGradientEnd.withValues(alpha: 0.4),
             blurRadius: 10,
             offset: const Offset(0, 5),
           ),
