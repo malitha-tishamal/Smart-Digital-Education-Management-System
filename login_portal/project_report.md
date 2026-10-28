@@ -1,178 +1,142 @@
-# Academic Project Report: Firebase & Cloudinary Integrated Login Portal (Eduwide)
+# Eduwide App — Full Project Report
 
-* **Course/Subject Code:** HNDIT 4232 Project
-* **Project Name:** Eduwide / EduLK Login Portal
-* **Framework:** Flutter (Dart)
-* **Backend Integration:** Firebase (Auth & Firestore) & Cloudinary API (Media Storage)
+**Platform**
+Flutter (Multi-Platform)
 
----
+**Backend**
+Firebase (Firestore + Auth)
 
-## 1. Project Overview & Objectives
-This project, named **Eduwide** (commercially branded as **EduLK**), is a cross-platform mobile login and profile management portal developed using Flutter. The application serves as a robust foundation for authentication, utilizing Firebase services for user management and secure database storage. It incorporates a role-based access control (RBAC) system, distinguishing between **Admins** and standard **Users**. Furthermore, the project implements media handling by uploading user profile pictures directly to **Cloudinary** using REST APIs.
+**Version**
+1.0.0+1
 
-### Key Objectives:
-* Implement secure email-and-password-based authentication.
-* Manage user profiles using Cloud Firestore.
-* Restrict access to specific screens based on user roles (`admin` / `user`).
-* Support profile picture updates with direct Cloudinary REST API uploads.
-* Enforce email verification constraints (restricting profile updates until the email is verified).
-* Synchronize operations with the local Sri Lankan timezone (`Asia/Colombo`).
+**Developer**
+Malitha Tishamal
 
----
+**Institution**
+HNDIT
+
+**SDK**
+Dart >=3.9.0 <4.0.0
+Android, iOS, Web, Windows, Linux, macOS
+
+**Date**
+July 2026
+
+## 1. Project Overview
+Eduwide is a cross-platform mobile/desktop application built with Flutter, designed as a comprehensive Login Portal and Educational Management System for HNDIT 4232. The app streamlines user management, providing role-based access control for Admins, Teachers, and Students. It handles user authentication, profile data management, and role-specific dashboards to facilitate educational resources and account management.
+
+**Key Goals**
+* Provide secure user authentication using Firebase Auth.
+* Enable role-based access for Administrators, Teachers, and Students.
+* Manage user profile data including NIC, Stream, Subjects, and A/L Year.
+* Provide an administrative dashboard to manage user accounts and resources.
+* Ensure a smooth startup flow with timezone support and robust Firebase initialization.
 
 ## 2. Technology Stack & Dependencies
+| Category | Package | Version | Purpose |
+| :--- | :--- | :--- | :--- |
+| UI Framework | `flutter` | SDK | Core UI |
+| Database | `cloud_firestore` | ^6.0.0 | NoSQL real-time database |
+| Authentication | `firebase_auth` | ^6.0.0 | User login/session |
+| Core Firebase | `firebase_core` | ^4.0.0 | Firebase initialization |
+| Timezone | `timezone` | ^0.10.1 | Asia/Colombo timezone support |
+| Image Picker | `image_picker` | ^1.2.0 | Profile photo upload |
+| Date Formatting | `intl` | ^0.20.2 | Date/time display |
+| HTTP | `http` | ^1.5.0 | Network requests |
+| Icons | `cupertino_icons` | ^1.0.8 | iOS style icons |
+| Launcher Icons | `flutter_launcher_icons`| ^0.14.4 | App icon generation |
 
-The application leverages modern, industry-standard libraries to provide a responsive and secure experience. Below is the list of dependencies used as defined in [pubspec.yaml](file:///E:/flutter/login_portal_firebase/login_portal/pubspec.yaml):
-
-* **Flutter SDK (v3.9.2+)**: Framework for compiling the cross-platform UI.
-* **firebase_core (^2.32.0)**: Used for initializing Firebase services on the client side.
-* **firebase_auth (^4.20.0)**: Facilitates secure email/password registration, login, state monitoring, email verification, and password reset functionalities.
-* **cloud_firestore (^4.17.5)**: NoSQL document database used to store extended user profiles (NIC, Mobile, Name, Role, Profile Picture URLs).
-* **timezone (^0.9.2)**: Configured to enforce the `Asia/Colombo` timezone for time-sensitive data logging.
-* **image_picker (^1.0.4)**: Allows users to capture or pick images from the camera/gallery for profile customization.
-* **http (^1.1.0)**: Utilized to communicate with Cloudinary's upload API via secure multipart requests.
-* **intl (^0.19.0)**: Formats dates and times for user registration details.
-
----
-
-## 3. Project Directory Structure
-Below is the architectural layout of the Dart files inside the project's `/lib` directory, showing a clean separation of concerns:
-
+## 3. App Architecture
 ```text
-lib/
-│
-├── auth/
-│   ├── firebase_load_check_screen.dart   # Loader while Firebase initializes
-│   ├── forgot_password_screen.dart       # Email reset submission screen
-│   ├── login_screen.dart                  # User authentication credentials input
-│   ├── signup_screen.dart                 # New account creation screen
-│   ├── simple_preload_screen.dart         # Intermediary dashboard preloader
-│   └── start_page.dart                    # Core welcome/landing interface (EduLK)
-│
+eduwide/lib/
+├── main.dart                     ← App entry point, timezone setup, Firebase init
+├── auth_service.dart             ← Firebase Auth & Firestore user logic
 ├── core/
-│   ├── app_colors.dart                   # Global theme color tokens (Blue Theme)
-│   ├── dashboard_wrapper.dart            # Role-based route dispatcher (Admin/User)
-│   └── firebase_options.dart             # Autogenerated platform configurations
-│
+│   ├── firebase_options.dart     ← Auto-generated Firebase config
+│   ├── app_colors.dart           ← Global color palette
+│   └── dashboard_wrapper.dart    ← Role-based routing (Admin/Teacher/Student)
+├── auth/
+│   ├── firebase_load_check_screen.dart
+│   ├── simple_preload_screen.dart
+│   ├── start_page.dart
+│   ├── login_screen.dart
+│   ├── signup_screen.dart
+│   └── forgot_password_screen.dart
 ├── models/
-│   └── user_model.dart                   # Serialization/Deserialization model class for Firestore
-│
-├── screens/
-│   ├── admin_dashboard.dart              # Custom UI & profile controls for 'admin' role
-│   └── user_dashboard.dart               # Custom UI & profile controls for 'user' role
-│
-├── auth_service.dart                     # Wrapper class for Auth & Firestore API calls
-└── main.dart                             # Application entry point with configuration
+│   └── user_model.dart           ← AppUser data model
+└── screens/
+    ├── admin/
+    │   └── admin_dashboard.dart
+    ├── teacher/
+    │   └── teacher_dashboard.dart
+    ├── student/
+    │   └── user_dashboard.dart
+    ├── class_detail_screen.dart
+    ├── user_accounts_manage.dart
+    └── user_resource_view.dart
 ```
 
----
-
-## 4. Architectural Workflows
-
-### 4.1 Authentication Lifecycle (AuthWrapper)
-The application defines a reactive stream listener inside the `AuthWrapper` in [main.dart](file:///E:/flutter/login_portal_firebase/login_portal/lib/main.dart). It monitors changes in `FirebaseAuth.instance.authStateChanges()`:
-
-```text
-- Launch App -> Initialize timezone & Firebase
-- AuthWrapper: Listen to authStateChanges
-    |---> Waiting: FirebaseLoadCheckScreen
-    |---> No User: StartPage (Welcome Screen with Login/Register)
-    |---> User Exists: SimplePreloadScreen -> DashboardWrapper
-- DashboardWrapper: Query Firestore for user.uid -> Retrieve field 'role'
-    |---> role == 'admin': AdminDashboard
-    |---> role == 'user': UserDashboard
-```
-
-### 4.2 Registration & User Profile Setup
-1. **User Sign Up:** The user registers via [signup_screen.dart](file:///E:/flutter/login_portal_firebase/login_portal/lib/auth/signup_screen.dart) with Name, Email, Password, NIC, Mobile, and Role.
-2. **Authentication Creation:** The account is created in Firebase Auth.
-3. **Firestore Entry:** The user profile data is serialized using `AppUser` in [user_model.dart](file:///E:/flutter/login_portal_firebase/login_portal/lib/models/user_model.dart) and set in Firestore at the path `users/{uid}`.
-
----
-
-## 5. Detailed Database Schema (Cloud Firestore)
-
-Firestore maintains a collection named `users` keyed by the user's Firebase Auth Unique Identifier (`uid`).
-
-### `users` Document Schema:
-| Field Name | Data Type | Description |
+## 4. Firebase Firestore Data Collections
+| Collection | Purpose | Key Fields |
 | :--- | :--- | :--- |
-| `uid` | String | Unique identifier from Firebase Authentication |
-| `name` | String | Full Name of the User |
-| `email` | String | User's Email Address |
-| `nic` | String | National Identity Card (NIC) number |
-| `mobile` | String | Mobile Contact Number |
-| `role` | String | Role designation: `'admin'` or `'user'` |
-| `profileImageUrl` | String (Optional) | URL pointing to the Cloudinary stored asset |
-| `createdAt` | Timestamp | Sri Lankan standard time when document was initialized |
+| `users` | All app accounts | `uid`, `email`, `name`, `nic`, `mobile`, `role`, `stream`, `subjects[]`, `status`, `alYear`, `studentId` |
 
----
+## 5. Global Design System (AppColors)
+Defined in `core/app_colors.dart`. Provides the foundation for the visual aesthetics.
+* **Primary Colors**: Integrates a primary palette for buttons, active states, and icons.
+* **Backgrounds**: Uses `AppColors.lightBackground` for the default `Scaffold` background, ensuring a clean and modern look.
 
-## 6. Advanced Technical Implementation Features
-
-### 6.1 Direct REST API Integration with Cloudinary
-Instead of relying on heavy plugins, the system uses the `http` package to securely post images to the **Cloudinary** CDN service using a raw multipart REST API:
-* **Cloud Name:** `dqeptzlsb`
-* **Upload Preset:** `flutter_mediq_upload`
-* **Method:** HTTP POST to `https://api.cloudinary.com/v1_1/dqeptzlsb/image/upload`
-
-### 6.2 Email Verification & Status Constraints
-Both `AdminDashboard` and `UserDashboard` contain validation logic to verify whether the logged-in user has verified their email address:
-* The page listens to changes to the current `User` state.
-* If `user.emailVerified == false`, the app displays a warning banner ("Action Disabled: Email Verification Pending").
-* All fields and the upload button are disabled using boolean logic flags `_isVerificationPending`.
-* An option to "Resend Verification Email" is displayed to let the user complete the verification process.
-
-### 6.3 Sri Lankan Local Time Setup
-In [main.dart](file:///E:/flutter/login_portal_firebase/login_portal/lib/main.dart), timezone database packages set the default application location dynamically:
-```dart
-tz_data.initializeTimeZones();
-tz.setLocalLocation(tz.getLocation('Asia/Colombo'));
+## 6. Authentication Module (lib/auth/)
+### 6.1 App Startup Flow
+```text
+MyApp (MaterialApp)
+  └── AuthWrapper (StreamBuilder on FirebaseAuth.authStateChanges)
+        ├── Loading: FirebaseLoadCheckScreen
+        ├── Logged In: SimplePreloadScreen → DashboardWrapper
+        └── Not Logged In: StartPage (Login/Signup)
 ```
-This guarantees that time formatting for reports and local logging remains consistently set to Sri Lankan Standard Time (SLST).
+### 6.2 Login Page (`login_screen.dart`)
+Allows users to authenticate using email and password via `FirebaseAuth`. Includes error handling and navigation to "Forgot Password" or "Sign Up" screens.
 
----
+### 6.3 Sign Up Page (`signup_screen.dart`)
+Registration form that captures extensive user details: Name, Email, Password, NIC, Mobile, Role, Stream, Subjects, A/L Year, and Student ID.
+Data is saved to Firestore under the `users` collection with a default `status` of `pending`.
 
-## 7. Key Source Code Codebase Summaries
+### 6.4 Forgot Password Page (`forgot_password_screen.dart`)
+Allows users to send a Firebase password-reset link to their email via `AuthService.sendPasswordResetEmail()`.
 
-### 7.1 Data Serialization Model (`AppUser`)
-Defined in [user_model.dart](file:///E:/flutter/login_portal_firebase/login_portal/lib/models/user_model.dart), this controls data modeling:
-```dart
-class AppUser {
-  final String uid;
-  final String email;
-  final String name;
-  final String nic;
-  final String mobile;
-  final String role; // 'admin' or 'user'
+## 7. Core Module (lib/core/)
+### 7.1 Dashboard Wrapper (`dashboard_wrapper.dart`)
+The central routing component post-login. Reads the user's document from Firestore to determine their `role` and routes them appropriately:
+* `admin` → `AdminDashboard`
+* `teacher` → `TeacherDashboard`
+* `student` / `user` → `StudentDashboard`
 
-  AppUser({required this.uid, required this.email, required this.name, required this.nic, required this.mobile, required this.role});
+Handles missing user documents gracefully and forces sign-out if the record is missing.
 
-  Map<String, dynamic> toMap() => {
-    'uid': uid,
-    'email': email,
-    'name': name,
-    'nic': nic,
-    'mobile': mobile,
-    'role': role,
-  };
+## 8. Screen Modules (lib/screens/)
+### 8.1 Admin Module
+Provides tools for managing the educational platform. Includes account management screens (`user_accounts_manage.dart`) and administrative dashboards.
+### 8.2 Teacher Module
+Dedicated dashboard for teachers to manage classes and resources (`class_detail_screen.dart`, `user_resource_view.dart`).
+### 8.3 Student Module
+Dedicated dashboard for students to view their educational progress and resources.
 
-  factory AppUser.fromMap(String uid, Map<String, dynamic> map) {
-    return AppUser(
-      uid: uid,
-      email: map['email'] ?? '',
-      name: map['name'] ?? '',
-      nic: map['nic'] ?? '',
-      mobile: map['mobile'] ?? '',
-      role: map['role'] ?? 'user',
-    );
-  }
-}
-```
+## 9. Security & Access Control
+| Feature | Implementation |
+| :--- | :--- |
+| Role-based routing | `DashboardWrapper` reads Firestore `role` field to route users dynamically. |
+| Account Status | Users are created with a `pending` status which can be managed by admins. |
+| Session management | `FirebaseAuth.authStateChanges()` stream handles session persistence across app restarts. |
 
-### 7.2 Service Handler Class (`AuthService`)
-Defined in [auth_service.dart](file:///E:/flutter/login_portal_firebase/login_portal/lib/auth_service.dart), this acts as the backend controller decoupling authentication logic from the UI. It encapsulates:
-* Account registration and Firestore user record generation.
-* User signing in with credential checking and profile fetch.
-* Secure token sign out.
-* Password reset triggers.
+## 10. Platform Support
+| Platform | Status |
+| :--- | :--- |
+| Android | ✅ Primary target |
+| iOS | ✅ Supported |
+| Web | ✅ Supported (via firebase_options.dart) |
+| Windows | ✅ Supported |
+| Linux | ✅ Supported |
+| macOS | ✅ Supported |
+
+Report generated: July 2026 | Eduwide App v1.0.0+1 | Developed by Malitha Tishamal | HNDIT 4232

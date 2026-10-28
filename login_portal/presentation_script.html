@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Eduwide App | Final Presentation Script</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',sans-serif;background:#F0F7FF;color:#1A1A2E;font-size:15px;line-height:1.7}
+  
+  .cover{background:linear-gradient(135deg,#42A5F5 0%,#1976D2 50%,#0D47A1 100%);color:#fff;padding:50px 60px;display:flex;flex-direction:column;justify-content:center;text-align:center;}
+  .cover h1{font-size:36px;font-weight:800;letter-spacing:-1px;margin-bottom:8px}
+  .cover .subtitle{font-size:18px;font-weight:300;opacity:.9;margin-bottom:10px}
+  
+  .content{padding:40px 60px; background:#fff; border-radius: 12px; margin: 20px auto; max-width: 1000px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);}
+  
+  h2{font-size:22px;font-weight:700;color:#1976D2;border-bottom:3px solid #1976D2;padding-bottom:8px;margin:32px 0 24px; text-align: center;}
+  
+  .script-card {
+    background: #FAFAFA; border: 1px solid #E0E0E0; border-left: 5px solid #90CAF9;
+    padding: 24px; border-radius: 8px; margin-bottom: 24px;
+  }
+  
+  .script-card.malitha {
+    background: #E3F2FD; border: 1px solid #BBDEFB; border-left: 6px solid #1976D2;
+    box-shadow: 0 4px 10px rgba(25, 118, 210, 0.1);
+  }
+  
+  .speaker-badge {
+    display: inline-block; background: #1976D2; color: #fff; padding: 4px 12px;
+    border-radius: 20px; font-size: 12px; font-weight: 700; text-transform: uppercase; margin-bottom: 12px;
+  }
+  
+  .script-card.malitha .speaker-badge {
+    background: #0D47A1;
+  }
+
+  .script-text {
+    font-size: 16px; color: #2D2D44; font-style: italic; line-height: 1.8;
+  }
+  
+  .instruction {
+    font-size: 12px; color: #D32F2F; font-weight: 600; text-transform: uppercase; margin-top: 12px; display: block; font-style: normal;
+  }
+
+  .footer{text-align:center;padding:24px;color:#888;font-size:12px;border-top:1px solid #eee;margin-top:32px}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>Eduwide App</h1>
+  <div class="subtitle">Final Presentation Speaking Script</div>
+  <p style="color: #E3F2FD; font-size: 14px;">Exactly what to say during the presentation, mapped to your team's flow.</p>
+</div>
+
+<div class="content">
+
+<h2>Presentation Speaking Notes</h2>
+
+<!-- STEP 1: MALITHA -->
+<div class="script-card malitha">
+  <div class="speaker-badge">Speaker: Malitha Tishamal (Lead Developer)</div>
+  <div class="script-text">
+    "Good morning everyone. Welcome to the presentation of the Eduwide App. I am Malitha Tishamal, the Lead Developer, and today our team of 7 will walk you through our Educational Management System. <br><br>
+    I will start by explaining our technology stack. We built this app using <strong>Flutter</strong> to provide a seamless cross-platform experience. For our backend, we utilized <strong>Firebase</strong>. As the lead, I designed the core database architecture using Firestore—creating structured NoSQL collections like 'users', 'enrollments', 'zoomMeetings', and 'payments' to efficiently handle our complex relational data and ensure real-time synchronization across all devices."
+    <span class="instruction">(Action: Switch slide to Login/Signup Screens)</span>
+  </div>
+</div>
+
+<!-- STEP 2: MEMBER 2 -->
+<div class="script-card">
+  <div class="speaker-badge">Speaker: Team Member 2</div>
+  <div class="script-text">
+    "Thank you, Malitha. Moving to the first step of the user journey, I developed the Authentication User Interfaces. I built the Login and Sign-Up screens, ensuring we capture essential data like Student ID, A/L Year, and Stream. I also implemented the form validations and the 'Forgot Password' UI to provide a smooth onboarding experience."
+  </div>
+</div>
+
+<!-- STEP 3: MALITHA -->
+<div class="script-card malitha">
+  <div class="speaker-badge">Speaker: Malitha Tishamal (Lead Developer)</div>
+  <div class="script-text">
+    "Once the user hits 'Login', our backend security takes over. I engineered the <strong>Role-Based Routing</strong> system through a core component called the DashboardWrapper. It securely verifies the user via Firebase Authentication, reads their assigned role in real-time from our database, and dynamically routes them to either the Admin, Teacher, or Student dashboard, preventing any unauthorized access."
+    <span class="instruction">(Action: Switch slide to Admin Dashboard)</span>
+  </div>
+</div>
+
+<!-- STEP 4: MEMBER 3 -->
+<div class="script-card">
+  <div class="speaker-badge">Speaker: Team Member 3</div>
+  <div class="script-text">
+    "As Malitha explained, new users are securely routed. However, new accounts are set as 'pending'. I built the Admin Dashboard and the User Accounts Management screen. This allows administrators to view pending accounts, verify student details, and officially approve or lock users before they can access the platform."
+  </div>
+</div>
+
+<!-- STEP 5: MEMBER 4 -->
+<div class="script-card">
+  <div class="speaker-badge">Speaker: Team Member 4</div>
+  <div class="script-text">
+    "After approval, students need to be assigned to classes. I developed the Class Enrollment interface. This allows Admins to seamlessly add students to specific teachers' classes. I also built the Global Resource Upload section, giving admins the power to distribute study materials across the app."
+  </div>
+</div>
+
+<!-- STEP 6: MEMBER 5 -->
+<div class="script-card">
+  <div class="speaker-badge">Speaker: Team Member 5</div>
+  <div class="script-text">
+    "On the educator's side, I designed the Teacher Dashboard. When a teacher logs in, they can instantly see statistics and live lists of their newly enrolled students, categorized by academic year. I also implemented the Teacher Profile management screens."
+    <span class="instruction">(Action: Switch slide to Zoom & Payments)</span>
+  </div>
+</div>
+
+<!-- STEP 7: MALITHA -->
+<div class="script-card malitha">
+  <div class="speaker-badge">Speaker: Malitha Tishamal (Lead Developer)</div>
+  <div class="script-text">
+    "This brings us to the most advanced functionality of our app: Live Classes and Payments. I engineered the backend logic to integrate <strong>Zoom Classes</strong> directly into our platform. Teachers can schedule sessions, and the app instantly syncs these active meetings to Firestore so students can join. <br><br>
+    Furthermore, I built the <strong>Payment Gateway Architecture</strong>. When a student is enrolled, my database logic automatically calculates and tracks their payments. This provides administrators and teachers with a real-time summary of 'Pending Payments' versus 'Completed Payments', giving our platform complete financial oversight."
+  </div>
+</div>
+
+<!-- STEP 8: MEMBER 6 -->
+<div class="script-card">
+  <div class="speaker-badge">Speaker: Team Member 6</div>
+  <div class="script-text">
+    "Finally, the student logs in. I developed the Student Dashboard. Here, students can view their enrolled subjects, check their payment status, download uploaded resources, and click a single button to seamlessly launch into the live Zoom sessions created by their teachers."
+  </div>
+</div>
+
+<!-- STEP 9: MEMBER 7 -->
+<div class="script-card">
+  <div class="speaker-badge">Speaker: Team Member 7</div>
+  <div class="script-text">
+    "To tie this entire flow together, I managed the Global UI and UX. I integrated our custom Blue Theme across all screens to ensure a consistent, modern aesthetic. I also conducted cross-platform QA testing to guarantee the app runs smoothly on Android, iOS, and Web."
+  </div>
+</div>
+
+<!-- CONCLUSION: MALITHA -->
+<div class="script-card malitha">
+  <div class="speaker-badge">Speaker: Malitha Tishamal (Lead Developer)</div>
+  <div class="script-text">
+    "In conclusion, by successfully dividing our frontend tasks among the team while centralizing our complex database architecture, secure routing, and advanced integrations, we were able to build a highly secure, scalable, and modern educational platform. Thank you for listening. We are now open for any questions."
+  </div>
+</div>
+
+
+<div class="footer">
+  Final Presentation Script &nbsp;|&nbsp; Eduwide App v1.0.0+1 &nbsp;|&nbsp; Developed by Malitha Tishamal &amp; Team
+</div>
+
+</div>
+</body>
+</html>

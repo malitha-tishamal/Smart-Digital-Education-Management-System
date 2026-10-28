@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Eduwide App | Presentation Flow & Team Breakdown</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Inter',sans-serif;background:#F0F7FF;color:#1A1A2E;font-size:14px;line-height:1.7}
+  
+  .cover{background:linear-gradient(135deg,#42A5F5 0%,#1976D2 50%,#0D47A1 100%);color:#fff;padding:50px 60px;display:flex;flex-direction:column;justify-content:center;}
+  .cover h1{font-size:36px;font-weight:800;letter-spacing:-1px;margin-bottom:8px}
+  .cover .subtitle{font-size:18px;font-weight:300;opacity:.9;margin-bottom:10px}
+  
+  .content{padding:40px 60px; background:#fff; border-radius: 12px; margin: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05);}
+  
+  h2{font-size:20px;font-weight:700;color:#1976D2;border-bottom:3px solid #1976D2;padding-bottom:8px;margin:32px 0 20px}
+  
+  .step-container { margin-bottom: 24px; position: relative; padding-left: 30px; border-left: 3px solid #E3F2FD; }
+  .step-container::before {
+    content: ''; position: absolute; left: -10px; top: 0; width: 16px; height: 16px;
+    background: #1976D2; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 2px #1976D2;
+  }
+
+  .step-title { font-size: 18px; font-weight: 700; color: #1A1A2E; margin-bottom: 4px; margin-top: -4px;}
+  
+  .lead-card {
+    background: linear-gradient(135deg, #1976D2 0%, #0D47A1 100%);
+    color: white; padding: 16px 20px; border-radius: 8px; margin-top: 10px;
+    box-shadow: 0 4px 10px rgba(25, 118, 210, 0.2); border-left: 5px solid #42A5F5;
+  }
+  .lead-card h3 { color: white; margin: 0 0 8px 0; font-size: 15px; display: flex; align-items: center; justify-content: space-between; }
+  .lead-card .badge { background: #FFC107; color: #000; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; text-transform: uppercase; }
+  .lead-card p, .lead-card ul { color: #E3F2FD; margin-bottom: 0; }
+  .lead-card li { margin-bottom: 4px; }
+
+  .member-card {
+    background: #FAFAFA; border: 1px solid #E0E0E0; border-left: 4px solid #90CAF9;
+    padding: 16px 20px; border-radius: 8px; margin-top: 10px;
+  }
+  .member-card h3 { margin: 0 0 8px 0; color: #1976D2; font-size: 15px; }
+  .member-card p, .member-card ul { margin-bottom: 0; }
+  .member-card li { margin-bottom: 4px; }
+
+  .complexity-high { color: #D32F2F; font-weight: 600; font-size: 11px; background: #FFEBEE; padding: 2px 6px; border-radius: 4px; margin-left: 6px; }
+  .complexity-med { color: #F57C00; font-weight: 600; font-size: 11px; background: #FFF3E0; padding: 2px 6px; border-radius: 4px; margin-left: 6px; }
+  .complexity-low { color: #388E3C; font-weight: 600; font-size: 11px; background: #E8F5E9; padding: 2px 6px; border-radius: 4px; margin-left: 6px; }
+
+  .footer{text-align:center;padding:24px;color:#888;font-size:12px;border-top:1px solid #eee;margin-top:32px}
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>Eduwide App</h1>
+  <div class="subtitle">Presentation Flow &amp; Exact Team Task Breakdown</div>
+  <p style="color: #E3F2FD; font-size: 14px;">Arranged chronologically from App Start to Advanced Features.</p>
+</div>
+
+<div class="content">
+<p>This document presents the Eduwide App features in the exact logical order of the user journey (starting from App Launch &amp; Login). It outlines how the 7-member team distributed these tasks, specifically highlighting the advanced technological implementations and architectures.</p>
+
+<h2>Logical App Flow &amp; Task Breakdown</h2>
+
+<!-- STEP 1 -->
+<div class="step-container">
+  <div class="step-title">1. Technology Stack &amp; Core Architecture Implementation</div>
+  <p>Before any UI was built, the foundational technologies, database structures, and platform connections had to be established.</p>
+  <div class="lead-card">
+    <h3>Malitha Tishamal <span class="badge">Lead Developer</span></h3>
+    <ul>
+      <li><strong>Technology Explanation:</strong> Explains the selection of Flutter, Firebase Auth, and Firestore. <span class="complexity-high">[High Complexity]</span></li>
+      <li><strong>Database Design:</strong> Designed the NoSQL collections (<code>users</code>, <code>enrollments</code>, <code>zoomMeetings</code>, <code>payments</code>).</li>
+      <li><strong>Firebase Integration:</strong> Configured <code>firebase_options.dart</code> and core initialization.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- STEP 2 -->
+<div class="step-container">
+  <div class="step-title">2. User Onboarding (Login, Sign Up &amp; Auth UI)</div>
+  <p>The first screen the user sees. Handles data capture for Students (A/L Year, NIC) and Teachers.</p>
+  <div class="member-card">
+    <h3>[Team Member 2 Name] <span style="color:#666; font-size:13px; font-weight:400;">- Auth UI Developer</span></h3>
+    <ul>
+      <li><strong>Login &amp; Sign Up Interfaces:</strong> Built the visual forms for user registration and authentication. <span class="complexity-low">[Low/Medium Complexity]</span></li>
+      <li><strong>Form Validation:</strong> Implemented text controllers, regex validation, and the "Forgot Password" UI.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- STEP 3 -->
+<div class="step-container">
+  <div class="step-title">3. Security, Authentication &amp; Role-Based Routing</div>
+  <p>Once the user clicks "Login", the backend securely verifies them and routes them to the correct dashboard based on their role.</p>
+  <div class="lead-card">
+    <h3>Malitha Tishamal <span class="badge">Lead Developer</span></h3>
+    <ul>
+      <li><strong>Firebase Authentication Logic:</strong> Engineered the secure sign-in process and session management. <span class="complexity-high">[High Complexity]</span></li>
+      <li><strong>Role-Based Routing:</strong> Developed <code>DashboardWrapper</code> which reads Firestore roles in real-time and dynamically routes to Admin, Teacher, or Student dashboards.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- STEP 4 -->
+<div class="step-container">
+  <div class="step-title">4. Admin Portal: User Approvals &amp; Account Management</div>
+  <p>Because new accounts are "pending", the Admin must log in first to approve new users before they can access the app.</p>
+  <div class="member-card">
+    <h3>[Team Member 3 Name] <span style="color:#666; font-size:13px; font-weight:400;">- Admin Frontend Developer</span></h3>
+    <ul>
+      <li><strong>Admin Dashboard UI:</strong> Built the <code>admin_dashboard.dart</code> overview interface. <span class="complexity-med">[Medium Complexity]</span></li>
+      <li><strong>Accounts Management:</strong> Created the interface for Admins to view pending accounts, approve them, or lock users.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- STEP 5 -->
+<div class="step-container">
+  <div class="step-title">5. Admin Portal: Adding Students to Classes &amp; Resources</div>
+  <p>After approval, the Admin assigns students to specific teacher classes.</p>
+  <div class="member-card">
+    <h3>[Team Member 4 Name] <span style="color:#666; font-size:13px; font-weight:400;">- Enrollment UI Developer</span></h3>
+    <ul>
+      <li><strong>Class Enrollment Screen:</strong> Built the UI where Admins select a student and enroll them into a class (<code>class_enrollment_screen.dart</code>). <span class="complexity-med">[Medium Complexity]</span></li>
+      <li><strong>Global Resources:</strong> Developed the <code>admin_resource_upload.dart</code> interface for uploading study materials.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- STEP 6 -->
+<div class="step-container">
+  <div class="step-title">6. Teacher Portal &amp; Class Management</div>
+  <p>The Teacher logs in to view their newly enrolled students and prepare for live sessions.</p>
+  <div class="member-card">
+    <h3>[Team Member 5 Name] <span style="color:#666; font-size:13px; font-weight:400;">- Teacher Frontend Developer</span></h3>
+    <ul>
+      <li><strong>Teacher Dashboard UI:</strong> Built <code>teacher_dashboard.dart</code> to list enrolled students dynamically by academic year. <span class="complexity-med">[Medium Complexity]</span></li>
+      <li><strong>Teacher Profile:</strong> Implemented the profile management screens for educators.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- STEP 7 -->
+<div class="step-container">
+  <div class="step-title">7. Advanced Backend: Zoom Integration &amp; Payment Gateway</div>
+  <p>Teachers create live classes, and payments must be tracked. This is the most complex logic in the app.</p>
+  <div class="lead-card">
+    <h3>Malitha Tishamal <span class="badge">Lead Developer</span></h3>
+    <ul>
+      <li><strong>Zoom API Integration:</strong> Engineered the backend logic inside <code>zoom_meeting_screen.dart</code> to create, launch, and sync active Zoom meetings directly to Firestore. <span class="complexity-high">[High Complexity]</span></li>
+      <li><strong>Payment Gateway Architecture:</strong> Developed the database relations that calculate and track "Pending Payments" vs "Completed Payments" when students are enrolled. <span class="complexity-high">[High Complexity]</span></li>
+    </ul>
+  </div>
+</div>
+
+<!-- STEP 8 -->
+<div class="step-container">
+  <div class="step-title">8. Student Portal: Joining Classes &amp; Viewing Resources</div>
+  <p>Finally, the Student logs in, sees their classes, checks their payment status, and clicks to join the active Zoom session.</p>
+  <div class="member-card">
+    <h3>[Team Member 6 Name] <span style="color:#666; font-size:13px; font-weight:400;">- Student Frontend Developer</span></h3>
+    <ul>
+      <li><strong>Student Dashboard UI:</strong> Built the <code>user_dashboard.dart</code> where students view their enrolled subjects. <span class="complexity-med">[Medium Complexity]</span></li>
+      <li><strong>Joining Meetings &amp; Resources:</strong> Created the UI to view resources and launch the Zoom app from the student side.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- STEP 9 -->
+<div class="step-container">
+  <div class="step-title">9. Global UI/UX Theme &amp; Final Quality Assurance</div>
+  <p>Ensuring the entire flow looks beautiful and runs smoothly on all devices.</p>
+  <div class="member-card">
+    <h3>[Team Member 7 Name] <span style="color:#666; font-size:13px; font-weight:400;">- UI/UX &amp; QA Engineer</span></h3>
+    <ul>
+      <li><strong>Design System:</strong> Integrated the <code>AppColors</code> blue theme seamlessly across all 9 steps above. <span class="complexity-low">[Low Complexity]</span></li>
+      <li><strong>Testing:</strong> Conducted cross-platform testing to ensure Android, iOS, and Web compatibility worked without bugs.</li>
+    </ul>
+  </div>
+</div>
+
+<div class="footer">
+  Presentation Flow Document &nbsp;|&nbsp; Eduwide App v1.0.0+1 &nbsp;|&nbsp; Developed by Malitha Tishamal &amp; Team
+</div>
+
+</div>
+</body>
+</html>
