@@ -1,3 +1,4 @@
+import '../../core/app_config.dart';
 import 'package:flutter/material.dart';
 import '../../core/app_colors.dart';
 
@@ -27,8 +28,7 @@ class _TeacherDrawerState extends State<TeacherDrawer> {
   final Color _primaryBlue = AppColors.primaryPurple;
   final Color _darkText = AppColors.darkText;
 
-  static const String _defaultProfileImageUrl =
-      'https://res.cloudinary.com/dqeptzlsb/image/upload/v1782734371/default_il19eg.png';
+  String get _defaultProfileImageUrl => AppConfig.defaultProfileImageUrl;
 
   String get _firstName {
     if (widget.userName.isEmpty) return 'Teacher';

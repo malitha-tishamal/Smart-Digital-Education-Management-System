@@ -1,3 +1,4 @@
+import '../../core/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
@@ -31,8 +32,7 @@ class _AccountsManagementScreenState extends State<AccountsManagementScreen>
   String _profileImageUrl = '';
   bool _isLoading = true;
 
-  static const String _defaultProfileImageUrl =
-      'https://res.cloudinary.com/dqeptzlsb/image/upload/v1782734371/default_il19eg.png';
+  String get _defaultProfileImageUrl => AppConfig.defaultProfileImageUrl;
 
   String get _currentRole {
     switch (_tabController.index) {

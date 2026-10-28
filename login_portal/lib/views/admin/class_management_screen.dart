@@ -1,3 +1,4 @@
+import '../../core/app_config.dart';
 import 'package:flutter/material.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -18,8 +19,7 @@ class _ClassManagementScreenState extends State<ClassManagementScreen> {
   String _searchQuery = '';
   final TextEditingController _searchController = TextEditingController();
 
-  static const String _defaultProfileImageUrl =
-      'https://res.cloudinary.com/dqeptzlsb/image/upload/v1782734371/default_il19eg.png';
+  String get _defaultProfileImageUrl => AppConfig.defaultProfileImageUrl;
 
   @override
   void initState() {

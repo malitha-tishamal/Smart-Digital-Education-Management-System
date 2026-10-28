@@ -1,3 +1,4 @@
+import '../../core/app_config.dart';
 import 'dart:io';
 import 'dart:async';
 import 'package:http/http.dart' as http;
@@ -24,11 +25,10 @@ class _StudentProfileScreenState extends State<StudentProfileScreen> {
   final _imagePicker = ImagePicker();
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
-  final String _cloudName = "dqeptzlsb";
-  final String _uploadPreset = "flutter_mediq_upload";
+  String get _cloudName => AppConfig.cloudinaryCloudName;
+  String get _uploadPreset => AppConfig.cloudinaryUploadPreset;
 
-  static const String _defaultProfileImageUrl =
-      'https://res.cloudinary.com/dqeptzlsb/image/upload/v1782734371/default_il19eg.png';
+  String get _defaultProfileImageUrl => AppConfig.defaultProfileImageUrl;
 
   // Text controllers (name, email, NIC, mobile, AL Year)
   final TextEditingController _fullNameController = TextEditingController();

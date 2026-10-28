@@ -1,3 +1,4 @@
+import '../../core/app_config.dart';
 import 'dart:io';
 import 'dart:async';
 import 'package:http/http.dart' as http;
@@ -24,11 +25,10 @@ class _AdminDashboardState extends State<AdminDashboard> {
   final _firestore = FirebaseFirestore.instance;
   final _imagePicker = ImagePicker();
 
-  final String _cloudName = "dqeptzlsb";
-  final String _uploadPreset = "flutter_mediq_upload";
+  String get _cloudName => AppConfig.cloudinaryCloudName;
+  String get _uploadPreset => AppConfig.cloudinaryUploadPreset;
 
-  static const String _defaultProfileImageUrl =
-      'https://res.cloudinary.com/dqeptzlsb/image/upload/v1782734333/default_ioe46y.png';
+  String get _defaultProfileImageUrl => AppConfig.defaultProfileImageUrl;
 
   final TextEditingController _fullNameController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();

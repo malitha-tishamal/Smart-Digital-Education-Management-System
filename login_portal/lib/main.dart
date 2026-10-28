@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:timezone/data/latest.dart' as tz_data;
@@ -19,8 +20,15 @@ import 'views/auth/forgot_password_screen.dart';
 // Views - Dashboard
 import 'views/dashboard/dashboard_wrapper.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Load environment variables (.env)
+  try {
+    await dotenv.load(fileName: ".env");
+  } catch (e) {
+    debugPrint("Note: .env file not loaded ($e), falling back to defaults.");
+  }
 
   // Timezone setup
   tz_data.initializeTimeZones();
